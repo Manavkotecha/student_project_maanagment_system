@@ -1,0 +1,187 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+model Account {
+  id                String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId            String  @db.Uuid
+  type              String  @db.VarChar(50)
+  provider          String  @db.VarChar(100)
+  providerAccountId String  @db.VarChar(255)
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String? @db.VarChar(100)
+  scope             String? @db.VarChar(255)
+  id_token          String?
+  session_state     String? @db.VarChar(255)
+  User              User    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId], map: "idx_account_user")
+}
+
+model ProjectGroup {
+  ProjectGroupID                            Int                  @id @default(autoincrement())
+  ProjectGroupName                          String               @db.VarChar(255)
+  ProjectTypeID                             Int
+  GuideStaffName                            String?              @db.VarChar(255)
+  ProjectTitle                              String               @db.VarChar(500)
+  ProjectArea                               String?              @db.VarChar(255)
+  ProjectDescription                        String?
+  AverageCPI                                Decimal?             @db.Decimal(3, 2)
+  ConvenerStaffID                           Int?
+  ExpertStaffID                             Int?
+  Description                               String?
+  Created                                   DateTime?            @default(now()) @db.Timestamptz(6)
+  Modified                                  DateTime?            @default(now()) @db.Timestamptz(6)
+  Staff_ProjectGroup_ConvenerStaffIDToStaff Staff?               @relation("ProjectGroup_ConvenerStaffIDToStaff", fields: [ConvenerStaffID], references: [StaffID], onUpdate: NoAction)
+  Staff_ProjectGroup_ExpertStaffIDToStaff   Staff?               @relation("ProjectGroup_ExpertStaffIDToStaff", fields: [ExpertStaffID], references: [StaffID], onUpdate: NoAction)
+  ProjectType                               ProjectType          @relation(fields: [ProjectTypeID], references: [ProjectTypeID], onUpdate: NoAction)
+  ProjectGroupMember                        ProjectGroupMember[]
+  ProjectMeeting                            ProjectMeeting[]
+
+  @@index([ConvenerStaffID], map: "idx_projectgroup_convener")
+  @@index([ProjectTypeID], map: "idx_projectgroup_type")
+}
+
+model ProjectGroupMember {
+  ProjectGroupMemberID Int          @id @default(autoincrement())
+  ProjectGroupID       Int
+  StudentID            Int
+  IsGroupLeader        Boolean?     @default(false)
+  StudentCGPA          Decimal?     @db.Decimal(3, 2)
+  Description          String?
+  Created              DateTime?    @default(now()) @db.Timestamptz(6)
+  Modified             DateTime?    @default(now()) @db.Timestamptz(6)
+  ProjectGroup         ProjectGroup @relation(fields: [ProjectGroupID], references: [ProjectGroupID], onDelete: Cascade, onUpdate: NoAction)
+  Student              Student      @relation(fields: [StudentID], references: [StudentID], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([ProjectGroupID, StudentID])
+  @@index([ProjectGroupID], map: "idx_groupmember_group")
+  @@index([StudentID], map: "idx_groupmember_student")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model ProjectMeeting {
+  ProjectMeetingID         Int                        @id @default(autoincrement())
+  ProjectGroupID           Int
+  GuideStaffID             Int
+  MeetingDateTime          DateTime                   @db.Timestamptz(6)
+  MeetingPurpose           String
+  MeetingLocation          String?                    @db.VarChar(255)
+  MeetingNotes             String?
+  MeetingStatus            String?                    @default("Scheduled") @db.VarChar(50)
+  MeetingStatusDescription String?
+  MeetingStatusDatetime    DateTime?                  @db.Timestamptz(6)
+  Description              String?
+  Created                  DateTime?                  @default(now()) @db.Timestamptz(6)
+  Modified                 DateTime?                  @default(now()) @db.Timestamptz(6)
+  Staff                    Staff                      @relation(fields: [GuideStaffID], references: [StaffID], onUpdate: NoAction)
+  ProjectGroup             ProjectGroup               @relation(fields: [ProjectGroupID], references: [ProjectGroupID], onDelete: Cascade, onUpdate: NoAction)
+  ProjectMeetingAttendance ProjectMeetingAttendance[]
+
+  @@index([MeetingDateTime], map: "idx_meeting_datetime")
+  @@index([ProjectGroupID], map: "idx_meeting_group")
+  @@index([GuideStaffID], map: "idx_meeting_guide")
+  @@index([MeetingStatus], map: "idx_meeting_status")
+}
+
+model ProjectMeetingAttendance {
+  ProjectMeetingAttendanceID Int            @id @default(autoincrement())
+  ProjectMeetingID           Int
+  StudentID                  Int
+  IsPresent                  Boolean?       @default(false)
+  AttendanceRemarks          String?
+  Description                String?
+  Created                    DateTime?      @default(now()) @db.Timestamptz(6)
+  Modified                   DateTime?      @default(now()) @db.Timestamptz(6)
+  ProjectMeeting             ProjectMeeting @relation(fields: [ProjectMeetingID], references: [ProjectMeetingID], onDelete: Cascade, onUpdate: NoAction)
+  Student                    Student        @relation(fields: [StudentID], references: [StudentID], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([ProjectMeetingID, StudentID])
+  @@index([ProjectMeetingID], map: "idx_attendance_meeting")
+  @@index([StudentID], map: "idx_attendance_student")
+}
+
+model ProjectType {
+  ProjectTypeID   Int            @id @default(autoincrement())
+  ProjectTypeName String         @db.VarChar(255)
+  Description     String?
+  Created         DateTime?      @default(now()) @db.Timestamptz(6)
+  Modified        DateTime?      @default(now()) @db.Timestamptz(6)
+  ProjectGroup    ProjectGroup[]
+
+  @@index([ProjectTypeName], map: "idx_projecttype_name")
+}
+
+model Session {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sessionToken String   @unique @db.VarChar(255)
+  userId       String   @db.Uuid
+  expires      DateTime @db.Timestamptz(6)
+  User         User     @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([sessionToken], map: "idx_session_token")
+  @@index([userId], map: "idx_session_user")
+}
+
+model Staff {
+  StaffID                                          Int              @id @default(autoincrement())
+  StaffName                                        String           @db.VarChar(255)
+  Phone                                            String?          @db.VarChar(20)
+  Email                                            String?          @unique @db.VarChar(255)
+  Password                                         String           @db.VarChar(255)
+  Description                                      String?
+  Created                                          DateTime?        @default(now()) @db.Timestamptz(6)
+  Modified                                         DateTime?        @default(now()) @db.Timestamptz(6)
+  ProjectGroup_ProjectGroup_ConvenerStaffIDToStaff ProjectGroup[]   @relation("ProjectGroup_ConvenerStaffIDToStaff")
+  ProjectGroup_ProjectGroup_ExpertStaffIDToStaff   ProjectGroup[]   @relation("ProjectGroup_ExpertStaffIDToStaff")
+  ProjectMeeting                                   ProjectMeeting[]
+
+  @@index([Email], map: "idx_staff_email")
+}
+
+model Student {
+  StudentID                Int                        @id @default(autoincrement())
+  StudentName              String                     @db.VarChar(255)
+  Phone                    String?                    @db.VarChar(20)
+  Email                    String?                    @unique @db.VarChar(255)
+  Description              String?
+  Created                  DateTime?                  @default(now()) @db.Timestamptz(6)
+  Modified                 DateTime?                  @default(now()) @db.Timestamptz(6)
+  ProjectGroupMember       ProjectGroupMember[]
+  ProjectMeetingAttendance ProjectMeetingAttendance[]
+
+  @@index([Email], map: "idx_student_email")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model User {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name           String?   @db.VarChar(255)
+  email          String?   @unique @db.VarChar(255)
+  emailVerified  DateTime? @db.Timestamptz(6)
+  image          String?   @db.VarChar(255)
+  role           String?   @default("student") @db.VarChar(50)
+  hashedPassword String?   @db.VarChar(255)
+  Account        Account[]
+  Session        Session[]
+
+  @@index([email], map: "idx_user_email")
+}
+
+model VerificationToken {
+  identifier String   @db.VarChar(255)
+  token      String   @unique @db.VarChar(255)
+  expires    DateTime @db.Timestamptz(6)
+
+  @@unique([identifier, token])
+  @@index([token], map: "idx_verification_token")
+}
