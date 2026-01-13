@@ -143,7 +143,7 @@ export default function LoginPage() {
 
           <div style={{ textAlign: 'center', marginTop: 16 }}>
             <Text type="secondary">
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
               <Link href="/signup" style={{ color: '#1677ff', fontWeight: 500 }}>
                 Sign Up
               </Link>

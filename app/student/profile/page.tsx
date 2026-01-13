@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Card, Form, Input, Button, Typography, Spin, message, Descriptions, Tag } from 'antd';
+import { Card, Form, Input, Button, Typography, Spin, Descriptions, Tag } from 'antd';
 import { UserOutlined, MailOutlined, PhoneOutlined, SaveOutlined } from '@ant-design/icons';
 import AppLayout from '@/components/layout/AppLayout';
 import { useAuth } from '@/hooks/useAuth';

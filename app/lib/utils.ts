@@ -1,10 +1,6 @@
-// Utility functions for SPMS
 
 import { NextResponse } from 'next/server';
 
-/**
- * Format date for display
- */
 export function formatDate(date: Date | string | null | undefined): string {
     if (!date) return 'N/A';
     const d = typeof date === 'string' ? new Date(date) : date;
@@ -15,9 +11,6 @@ export function formatDate(date: Date | string | null | undefined): string {
     });
 }
 
-/**
- * Format datetime for display
- */
 export function formatDateTime(date: Date | string | null | undefined): string {
     if (!date) return 'N/A';
     const d = typeof date === 'string' ? new Date(date) : date;
@@ -30,9 +23,6 @@ export function formatDateTime(date: Date | string | null | undefined): string {
     });
 }
 
-/**
- * Standard API success response
- */
 export function successResponse<T>(data: T, message?: string) {
     return NextResponse.json({
         success: true,
@@ -41,9 +31,6 @@ export function successResponse<T>(data: T, message?: string) {
     });
 }
 
-/**
- * Standard API error response
- */
 export function errorResponse(error: string, status: number = 400) {
     return NextResponse.json(
         {
@@ -54,26 +41,17 @@ export function errorResponse(error: string, status: number = 400) {
     );
 }
 
-/**
- * Calculate average CPI from members
- */
 export function calculateAverageCPI(cgpas: (number | null | undefined)[]): number | null {
     const validCgpas = cgpas.filter((c): c is number => c != null && !isNaN(c));
     if (validCgpas.length === 0) return null;
     return Number((validCgpas.reduce((a, b) => a + b, 0) / validCgpas.length).toFixed(2));
 }
 
-/**
- * Truncate text with ellipsis
- */
 export function truncateText(text: string | null | undefined, maxLength: number = 50): string {
     if (!text) return '';
     return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
 }
 
-/**
- * Get initials from name
- */
 export function getInitials(name: string | null | undefined): string {
     if (!name) return '?';
     return name
@@ -84,9 +62,6 @@ export function getInitials(name: string | null | undefined): string {
         .substring(0, 2);
 }
 
-/**
- * Meeting status color mapping for Ant Design tags
- */
 export function getMeetingStatusColor(status: string | null | undefined): string {
     switch (status?.toLowerCase()) {
         case 'scheduled':
@@ -102,9 +77,6 @@ export function getMeetingStatusColor(status: string | null | undefined): string
     }
 }
 
-/**
- * Role badge color mapping
- */
 export function getRoleColor(role: string | null | undefined): string {
     switch (role?.toLowerCase()) {
         case 'admin':
@@ -118,9 +90,6 @@ export function getRoleColor(role: string | null | undefined): string {
     }
 }
 
-/**
- * Generate a random password (for demo purposes)
- */
 export function generatePassword(length: number = 12): string {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%';
     let password = '';
@@ -130,17 +99,11 @@ export function generatePassword(length: number = 12): string {
     return password;
 }
 
-/**
- * Validate email format
- */
 export function isValidEmail(email: string): boolean {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
 }
 
-/**
- * Debounce function for search inputs
- */
 export function debounce<T extends (...args: Parameters<T>) => ReturnType<T>>(
     func: T,
     wait: number

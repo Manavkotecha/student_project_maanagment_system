@@ -2,23 +2,8 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  Form,
-  Input,
-  Button,
-  Card,
-  Typography,
-  App,
-  Space,
-  Divider,
-  Select,
-} from 'antd';
-import {
-  UserOutlined,
-  LockOutlined,
-  MailOutlined,
-  UserAddOutlined,
-} from '@ant-design/icons';
+import {Form,Input,Button,Card,Typography,App,Space,Divider,Select,} from 'antd';
+import { UserOutlined, LockOutlined, MailOutlined, UserAddOutlined,} from '@ant-design/icons';
 import Link from 'next/link';
 
 const { Title, Text } = Typography;
@@ -29,7 +14,7 @@ interface SignupForm {
   email: string;
   password: string;
   confirmPassword: string;
-  role: 'student' | 'faculty' | 'admin';
+  role: 'student' | 'faculty';
 }
 
 export default function SignupPage() {
@@ -146,7 +131,6 @@ export default function SignupPage() {
               <Select placeholder="Select your role">
                 <Option value="student">Student</Option>
                 <Option value="faculty">Faculty</Option>
-                <Option value="admin">Admin</Option>
               </Select>
             </Form.Item>
 

@@ -7,7 +7,7 @@ const signupSchema = z.object({
     name: z.string().min(2, 'Name must be at least 2 characters'),
     email: z.string().email('Invalid email address'),
     password: z.string().min(6, 'Password must be at least 6 characters'),
-    role: z.enum(['student', 'faculty', 'admin']).optional().default('student'),
+    role: z.enum(['student', 'faculty']).optional().default('student'),
 });
 
 export async function POST(request: NextRequest) {
@@ -15,7 +15,6 @@ export async function POST(request: NextRequest) {
         const body = await request.json();
         const validatedData = signupSchema.parse(body);
 
-        // Check if user already exists
         const existingUser = await prisma.user.findUnique({
             where: { email: validatedData.email },
         });
@@ -27,8 +26,7 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Check if email exists in Staff or Student tables
-        if (validatedData.role === 'faculty' || validatedData.role === 'admin') {
+        if (validatedData.role === 'faculty') {
             const existingStaff = await prisma.staff.findUnique({
                 where: { Email: validatedData.email },
             });
@@ -52,10 +50,8 @@ export async function POST(request: NextRequest) {
             }
         }
 
-        // Hash password
         const hashedPassword = await bcrypt.hash(validatedData.password, 10);
 
-        // Create user
         const user = await prisma.user.create({
             data: {
                 name: validatedData.name,
@@ -65,7 +61,6 @@ export async function POST(request: NextRequest) {
             },
         });
 
-        // Return success without sensitive data
         return NextResponse.json(
             {
                 message: 'User created successfully',

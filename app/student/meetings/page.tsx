@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Card, Typography, Table, Tag, Tabs, Empty, Spin, Badge } from 'antd';
-import { CheckCircleOutlined, CloseCircleOutlined, CalendarOutlined } from '@ant-design/icons';
+import { CalendarOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import AppLayout from '@/components/layout/AppLayout';
 import { useAuth } from '@/hooks/useAuth';

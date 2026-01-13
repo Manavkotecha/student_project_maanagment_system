@@ -14,7 +14,6 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
-        // Check Staff (Faculty/Admin)
         const staff = await prisma.staff.findUnique({
           where: { Email: credentials.email },
         });
