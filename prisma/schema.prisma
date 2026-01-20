@@ -68,7 +68,6 @@ model ProjectGroupMember {
   @@index([StudentID], map: "idx_groupmember_student")
 }
 
-/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model ProjectMeeting {
   ProjectMeetingID         Int                        @id @default(autoincrement())
   ProjectGroupID           Int

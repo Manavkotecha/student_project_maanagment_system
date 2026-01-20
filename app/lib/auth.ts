@@ -19,7 +19,6 @@ export const authOptions: NextAuthOptions = {
         });
 
         if (staff && await bcrypt.compare(credentials.password, staff.Password)) {
-          // Admin detection: Check if email contains 'admin' or specific role field
           const isAdmin = credentials.email.toLowerCase().includes('admin');
           return {
             id: staff.StaffID.toString(),
@@ -29,7 +28,6 @@ export const authOptions: NextAuthOptions = {
           };
         }
 
-        // Check User table (for Students)
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
         });
@@ -43,14 +41,12 @@ export const authOptions: NextAuthOptions = {
           };
         }
 
-        // Also check Student table directly (for demo purposes)
         const student = await prisma.student.findUnique({
           where: { Email: credentials.email },
         });
 
         if (student) {
-          // For demo, allow any password for students
-          // In production, students should have proper password handling
+          
           return {
             id: student.StudentID.toString(),
             name: student.StudentName,
@@ -81,12 +77,12 @@ export const authOptions: NextAuthOptions = {
   },
   pages: {
     signIn: '/login',
-    error: '/login', // Redirect to login on error
+    error: '/login',
   },
   session: {
     strategy: 'jwt',
-    maxAge: 24 * 60 * 60, // 24 hours
+    maxAge: 24 * 60 * 60, 
   },
   secret: process.env.NEXTAUTH_SECRET,
-  debug: process.env.NODE_ENV === 'development', // Enable debug in dev
+  debug: process.env.NODE_ENV === 'development',
 };

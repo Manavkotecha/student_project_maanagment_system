@@ -2,8 +2,8 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import {Form,Input,Button,Card,Typography,App,Space,Divider,Select,} from 'antd';
-import { UserOutlined, LockOutlined, MailOutlined, UserAddOutlined,} from '@ant-design/icons';
+import { Form, Input, Button, Card, Typography, App, Space, Select } from 'antd';
+import { UserOutlined, LockOutlined, MailOutlined, UserAddOutlined, BookOutlined, TeamOutlined } from '@ant-design/icons';
 import Link from 'next/link';
 
 const { Title, Text } = Typography;
@@ -64,32 +64,115 @@ export default function SignupPage() {
         alignItems: 'center',
         justifyContent: 'center',
         background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        position: 'relative',
+        overflow: 'hidden',
         padding: 24,
       }}
     >
+      {/* Animated background elements */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '-10%',
+          right: '-10%',
+          width: '600px',
+          height: '600px',
+          background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)',
+          borderRadius: '50%',
+          animation: 'float 15s ease-in-out infinite',
+        }}
+      />
+      <div
+        style={{
+          position: 'absolute',
+          bottom: '-15%',
+          left: '-10%',
+          width: '500px',
+          height: '500px',
+          background: 'radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%)',
+          borderRadius: '50%',
+          animation: 'float 20s ease-in-out infinite reverse',
+        }}
+      />
+
+      <style jsx>{`
+        @keyframes float {
+          0%, 100% { transform: translate(0, 0) rotate(0deg); }
+          33% { transform: translate(30px, -30px) rotate(120deg); }
+          66% { transform: translate(-20px, 20px) rotate(240deg); }
+        }
+        @keyframes slideIn {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
+
       <Card
         style={{
           width: '100%',
-          maxWidth: 480,
-          boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
-          borderRadius: 16,
+          maxWidth: 520,
+          background: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(20px)',
+          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.5)',
+          borderRadius: 24,
+          border: '1px solid rgba(255, 255, 255, 0.3)',
+          position: 'relative',
+          zIndex: 1,
+          animation: 'slideIn 0.6s ease-out',
         }}
         styles={{
-          body: { padding: 40 },
+          body: { padding: 48 },
         }}
       >
-        <Space orientation="vertical" size="large" style={{ width: '100%' }}>
-          <div style={{ textAlign: 'center' }}>
-            <Title level={2} style={{ marginBottom: 8, color: '#1677ff' }}>
-              SPMS
+        <Space direction="vertical" size="large" style={{ width: '100%' }}>
+          {/* Logo and Title Section */}
+          <div style={{ textAlign: 'center', marginBottom: 8 }}>
+            <div
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 72,
+                height: 72,
+                borderRadius: 20,
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                boxShadow: '0 8px 24px rgba(102, 126, 234, 0.4)',
+                marginBottom: 20,
+              }}
+            >
+              <BookOutlined style={{ fontSize: 36, color: 'white' }} />
+            </div>
+            <Title
+              level={2}
+              style={{
+                marginBottom: 8,
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                fontWeight: 700,
+                fontSize: 32,
+              }}
+            >
+              Create Account
             </Title>
-            <Text type="secondary">
-              Student Project Management System
+            <Text
+              style={{
+                fontSize: 15,
+                color: '#8c8c8c',
+                fontWeight: 500,
+              }}
+            >
+              Join Student Project Management System
             </Text>
           </div>
 
-          <Divider style={{ margin: '16px 0' }}>Create your account</Divider>
-
+          {/* Signup Form */}
           <Form
             form={form}
             layout="vertical"
@@ -97,58 +180,101 @@ export default function SignupPage() {
             size="large"
             autoComplete="off"
             initialValues={{ role: 'student' }}
+            style={{ marginTop: 16 }}
           >
             <Form.Item
               name="name"
+              label={<span style={{ fontWeight: 600, color: '#262626' }}>Full Name</span>}
               rules={[
                 { required: true, message: 'Please enter your name' },
                 { min: 2, message: 'Name must be at least 2 characters' },
               ]}
             >
               <Input
-                prefix={<UserOutlined style={{ color: '#bfbfbf' }} />}
-                placeholder="Full Name"
+                prefix={<UserOutlined style={{ color: '#8c8c8c', fontSize: 16 }} />}
+                placeholder="John Doe"
+                style={{
+                  height: 50,
+                  borderRadius: 12,
+                  fontSize: 15,
+                  border: '1.5px solid #e8e8e8',
+                  transition: 'all 0.3s ease',
+                }}
               />
             </Form.Item>
 
             <Form.Item
               name="email"
+              label={<span style={{ fontWeight: 600, color: '#262626' }}>Email Address</span>}
               rules={[
                 { required: true, message: 'Please enter your email' },
                 { type: 'email', message: 'Please enter a valid email' },
               ]}
             >
               <Input
-                prefix={<MailOutlined style={{ color: '#bfbfbf' }} />}
-                placeholder="Email address"
+                prefix={<MailOutlined style={{ color: '#8c8c8c', fontSize: 16 }} />}
+                placeholder="you@example.com"
+                style={{
+                  height: 50,
+                  borderRadius: 12,
+                  fontSize: 15,
+                  border: '1.5px solid #e8e8e8',
+                  transition: 'all 0.3s ease',
+                }}
               />
             </Form.Item>
 
             <Form.Item
               name="role"
+              label={<span style={{ fontWeight: 600, color: '#262626' }}>Your Role</span>}
               rules={[{ required: true, message: 'Please select a role' }]}
             >
-              <Select placeholder="Select your role">
-                <Option value="student">Student</Option>
-                <Option value="faculty">Faculty</Option>
+              <Select
+                placeholder="Select your role"
+                style={{
+                  height: 50,
+                }}
+                suffixIcon={<TeamOutlined style={{ color: '#8c8c8c' }} />}
+              >
+                <Option value="student">
+                  <Space>
+                    <UserOutlined />
+                    <span>Student</span>
+                  </Space>
+                </Option>
+                <Option value="faculty">
+                  <Space>
+                    <BookOutlined />
+                    <span>Faculty</span>
+                  </Space>
+                </Option>
               </Select>
             </Form.Item>
 
             <Form.Item
               name="password"
+              label={<span style={{ fontWeight: 600, color: '#262626' }}>Password</span>}
               rules={[
                 { required: true, message: 'Please enter your password' },
                 { min: 6, message: 'Password must be at least 6 characters' },
               ]}
             >
               <Input.Password
-                prefix={<LockOutlined style={{ color: '#bfbfbf' }} />}
-                placeholder="Password"
+                prefix={<LockOutlined style={{ color: '#8c8c8c', fontSize: 16 }} />}
+                placeholder="Minimum 6 characters"
+                style={{
+                  height: 50,
+                  borderRadius: 12,
+                  fontSize: 15,
+                  border: '1.5px solid #e8e8e8',
+                  transition: 'all 0.3s ease',
+                }}
               />
             </Form.Item>
 
             <Form.Item
               name="confirmPassword"
+              label={<span style={{ fontWeight: 600, color: '#262626' }}>Confirm Password</span>}
               dependencies={['password']}
               rules={[
                 { required: true, message: 'Please confirm your password' },
@@ -161,10 +287,18 @@ export default function SignupPage() {
                   },
                 }),
               ]}
+              style={{ marginBottom: 24 }}
             >
               <Input.Password
-                prefix={<LockOutlined style={{ color: '#bfbfbf' }} />}
-                placeholder="Confirm Password"
+                prefix={<LockOutlined style={{ color: '#8c8c8c', fontSize: 16 }} />}
+                placeholder="Re-enter your password"
+                style={{
+                  height: 50,
+                  borderRadius: 12,
+                  fontSize: 15,
+                  border: '1.5px solid #e8e8e8',
+                  transition: 'all 0.3s ease',
+                }}
               />
             </Form.Item>
 
@@ -176,20 +310,42 @@ export default function SignupPage() {
                 icon={<UserAddOutlined />}
                 block
                 style={{
-                  height: 48,
+                  height: 52,
                   fontSize: 16,
-                  borderRadius: 8,
+                  fontWeight: 600,
+                  borderRadius: 12,
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  border: 'none',
+                  boxShadow: '0 4px 16px rgba(102, 126, 234, 0.4)',
+                  transition: 'all 0.3s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(102, 126, 234, 0.5)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 16px rgba(102, 126, 234, 0.4)';
                 }}
               >
-                Sign Up
+                Create Account
               </Button>
             </Form.Item>
           </Form>
 
-          <div style={{ textAlign: 'center', marginTop: 16 }}>
-            <Text type="secondary">
+          {/* Footer Links */}
+          <div style={{ textAlign: 'center', marginTop: 8 }}>
+            <Text style={{ color: '#595959', fontSize: 14 }}>
               Already have an account?{' '}
-              <Link href="/login" style={{ color: '#1677ff', fontWeight: 500 }}>
+              <Link
+                href="/login"
+                style={{
+                  color: '#667eea',
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                  transition: 'all 0.2s ease',
+                }}
+              >
                 Sign In
               </Link>
             </Text>
