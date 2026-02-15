@@ -1,12 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Button, Form, Input, Space, Popconfirm, Typography, Tag, App } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import React, { useState, useMemo } from 'react';
+import { Button, Form, Input, Space, Popconfirm, Tag, App, Avatar, Row, Col } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, UserOutlined, TeamOutlined, CalendarOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
+import { motion } from 'framer-motion';
 import AppLayout from '@/components/layout/AppLayout';
 import DataTable from '@/components/ui/DataTable';
 import FormModal from '@/components/ui/FormModal';
+import PageHeader from '@/components/ui/PageHeader';
+import StatCard from '@/components/ui/StatCard';
 import {
   useStaff,
   useCreateStaff,
@@ -14,9 +17,7 @@ import {
   useDeleteStaff,
 } from '@/hooks/useStaff';
 import type { Staff, CreateStaffInput } from '@/app/types';
-import { formatDate } from '@/app/lib/utils';
-
-const { Title } = Typography;
+import { formatDate, getInitials } from '@/app/lib/utils';
 
 interface StaffWithCount extends Staff {
   _count?: {
@@ -24,6 +25,19 @@ interface StaffWithCount extends Staff {
     ProjectMeeting: number;
   };
 }
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+};
 
 export default function StaffPage() {
   const [form] = Form.useForm<CreateStaffInput>();
@@ -36,6 +50,19 @@ export default function StaffPage() {
   const createMutation = useCreateStaff();
   const updateMutation = useUpdateStaff();
   const deleteMutation = useDeleteStaff();
+
+  // Calculate stats
+  const stats = useMemo(() => {
+    if (!staff) return { total: 0, activeGuides: 0, totalMeetings: 0 };
+    const activeGuides = staff.filter(
+      (s: StaffWithCount) => (s._count?.ProjectGroup_ProjectGroup_ConvenerStaffIDToStaff || 0) > 0
+    ).length;
+    const totalMeetings = staff.reduce(
+      (acc: number, s: StaffWithCount) => acc + (s._count?.ProjectMeeting || 0),
+      0
+    );
+    return { total: staff.length, activeGuides, totalMeetings };
+  }, [staff]);
 
   const handleAdd = () => {
     form.resetFields();
@@ -88,35 +115,39 @@ export default function StaffPage() {
 
   const columns: ColumnsType<StaffWithCount> = [
     {
-      title: 'ID',
-      dataIndex: 'StaffID',
-      key: 'id',
-      width: 80,
-      sorter: (a, b) => a.StaffID - b.StaffID,
-    },
-    {
-      title: 'Name',
-      dataIndex: 'StaffName',
-      key: 'name',
+      title: 'Staff Member',
+      key: 'member',
+      render: (_, record) => (
+        <Space>
+          <Avatar
+            size={40}
+            style={{
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              fontWeight: 600,
+            }}
+          >
+            {getInitials(record.StaffName)}
+          </Avatar>
+          <div>
+            <div style={{ fontWeight: 500 }}>{record.StaffName}</div>
+            <div style={{ fontSize: 12, color: '#8c8c8c' }}>{record.Email}</div>
+          </div>
+        </Space>
+      ),
       sorter: (a, b) => a.StaffName.localeCompare(b.StaffName),
-    },
-    {
-      title: 'Email',
-      dataIndex: 'Email',
-      key: 'email',
     },
     {
       title: 'Phone',
       dataIndex: 'Phone',
       key: 'phone',
-      render: (text) => text || '-',
+      render: (text) => text || <span style={{ color: '#d9d9d9' }}>—</span>,
     },
     {
       title: 'Projects',
       key: 'projects',
       width: 100,
       render: (_, record) => (
-        <Tag color="blue">
+        <Tag color="blue" style={{ borderRadius: 12, fontWeight: 500 }}>
           {record._count?.ProjectGroup_ProjectGroup_ConvenerStaffIDToStaff || 0}
         </Tag>
       ),
@@ -126,7 +157,9 @@ export default function StaffPage() {
       key: 'meetings',
       width: 100,
       render: (_, record) => (
-        <Tag color="green">{record._count?.ProjectMeeting || 0}</Tag>
+        <Tag color="green" style={{ borderRadius: 12, fontWeight: 500 }}>
+          {record._count?.ProjectMeeting || 0}
+        </Tag>
       ),
     },
     {
@@ -151,6 +184,7 @@ export default function StaffPage() {
               type="text"
               icon={<EditOutlined />}
               onClick={() => handleEdit(record)}
+              style={{ color: '#667eea' }}
             />
             <Popconfirm
               title="Delete staff member?"
@@ -175,22 +209,69 @@ export default function StaffPage() {
 
   return (
     <AppLayout>
-      <Title level={2} style={{ marginBottom: 24 }}>Staff Management</Title>
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+      >
+        <motion.div variants={itemVariants}>
+          <PageHeader
+            title="Staff Management"
+            subtitle="Manage faculty guides, conveners, and expert staff members"
+            breadcrumbs={[
+              { title: 'Admin', href: '/admin' },
+              { title: 'Staff' },
+            ]}
+          />
+        </motion.div>
 
-      <DataTable<StaffWithCount>
-        columns={columns}
-        dataSource={staff || []}
-        rowKey="StaffID"
-        loading={isLoading}
-        onSearch={(value) => setSearchQuery(value)}
-        onRefresh={() => refetch()}
-        searchPlaceholder="Search staff by name or email..."
-        extraActions={
-          <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
-            Add Staff
-          </Button>
-        }
-      />
+        {/* Stats Row */}
+        <motion.div variants={itemVariants}>
+          <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+            <Col xs={24} sm={8}>
+              <StatCard
+                title="Total Staff"
+                value={stats.total}
+                icon={<UserOutlined />}
+                color="#667eea"
+              />
+            </Col>
+            <Col xs={24} sm={8}>
+              <StatCard
+                title="Active Guides"
+                value={stats.activeGuides}
+                icon={<TeamOutlined />}
+                color="#764ba2"
+              />
+            </Col>
+            <Col xs={24} sm={8}>
+              <StatCard
+                title="Total Meetings"
+                value={stats.totalMeetings}
+                icon={<CalendarOutlined />}
+                color="#52c41a"
+              />
+            </Col>
+          </Row>
+        </motion.div>
+
+        <motion.div variants={itemVariants}>
+          <DataTable<StaffWithCount>
+            columns={columns}
+            dataSource={staff || []}
+            rowKey="StaffID"
+            loading={isLoading}
+            onSearch={(value) => setSearchQuery(value)}
+            onRefresh={() => refetch()}
+            searchPlaceholder="Search staff by name or email..."
+            extraActions={
+              <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
+                Add Staff
+              </Button>
+            }
+          />
+        </motion.div>
+      </motion.div>
 
       <FormModal
         title={editingId ? 'Edit Staff Member' : 'Add Staff Member'}

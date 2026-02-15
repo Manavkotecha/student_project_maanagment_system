@@ -45,44 +45,52 @@ export default function DataTable<T extends object>({
 
   return (
     <div>
-      <div style={{ 
-        marginBottom: 16, 
-        display: 'flex', 
+      <div style={{
+        marginBottom: 16,
+        display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
         flexWrap: 'wrap',
         gap: 12,
       }}>
-        <Space wrap>
+        <Space>
           {showSearch && (
-            <Input.Search
-              placeholder={searchPlaceholder}
-              allowClear
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-              onSearch={handleSearch}
-              style={{ width: 250 }}
-              prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />}
-            />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <Input
+                placeholder={searchPlaceholder}
+                allowClear
+                value={searchValue}
+                onChange={(e) => {
+                  setSearchValue(e.target.value);
+                  onSearch?.(e.target.value);
+                }}
+                style={{ width: 250 }}
+                prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />}
+              />
+              <Button
+                icon={<SearchOutlined />}
+                onClick={() => handleSearch(searchValue)}
+              />
+            </div>
           )}
           {showRefresh && (
             <Tooltip title="Refresh">
-              <Button 
-                icon={<ReloadOutlined />} 
+              <Button
+                icon={<ReloadOutlined />}
                 onClick={onRefresh}
                 loading={loading}
               />
             </Tooltip>
           )}
         </Space>
-        
+
         {extraActions && (
           <Space wrap>
             {extraActions}
           </Space>
         )}
       </div>
-      
+
       <Table<T>
         {...tableProps}
         loading={loading}

@@ -1,17 +1,33 @@
 'use client';
 
-import React from 'react';
-import { Card, Typography, Table, Tag, Tabs, Empty, Spin, Badge } from 'antd';
-import { CalendarOutlined } from '@ant-design/icons';
+import React, { useMemo } from 'react';
+import { Card, Typography, Table, Tag, Tabs, Empty, Spin, Badge, Row, Col, Space } from 'antd';
+import { CalendarOutlined, ClockCircleOutlined, CheckCircleOutlined, EnvironmentOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
+import { motion } from 'framer-motion';
 import AppLayout from '@/components/layout/AppLayout';
+import PageHeader from '@/components/ui/PageHeader';
+import StatCard from '@/components/ui/StatCard';
 import { useAuth } from '@/hooks/useAuth';
 import { useStudents } from '@/hooks/useStudents';
 import { useMeetings } from '@/hooks/useMeetings';
 import type { ProjectMeeting } from '@/app/types';
 import { formatDateTime, getMeetingStatusColor } from '@/app/lib/utils';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+};
 
 export default function StudentMeetingsPage() {
   const { user } = useAuth();
@@ -33,6 +49,21 @@ export default function StudentMeetingsPage() {
     (m) => new Date(m.MeetingDateTime) < new Date()
   );
 
+  // Stats
+  const stats = useMemo(() => {
+    const attended = myMeetings.filter((m) => {
+      const myAttendance = m.ProjectMeetingAttendance?.find(
+        (a) => a.StudentID === currentStudent?.StudentID
+      );
+      return myAttendance?.IsPresent;
+    }).length;
+    return { 
+      total: myMeetings.length, 
+      upcoming: upcomingMeetings.length, 
+      attended 
+    };
+  }, [myMeetings, upcomingMeetings, currentStudent]);
+
   const isLoading = studentsLoading || meetingsLoading;
 
   const columns: ColumnsType<ProjectMeeting> = [
@@ -40,7 +71,12 @@ export default function StudentMeetingsPage() {
       title: 'Group',
       key: 'group',
       render: (_, record) => (
-        <Text strong>{record.ProjectGroup?.ProjectGroupName}</Text>
+        <div>
+          <Text strong>{record.ProjectGroup?.ProjectGroupName}</Text>
+          <div style={{ fontSize: 12, color: '#8c8c8c' }}>
+            {record.ProjectGroup?.ProjectTitle}
+          </div>
+        </div>
       ),
     },
     {
@@ -48,10 +84,10 @@ export default function StudentMeetingsPage() {
       dataIndex: 'MeetingDateTime',
       key: 'datetime',
       render: (date) => (
-        <>
-          <CalendarOutlined style={{ marginRight: 4 }} />
+        <Space>
+          <CalendarOutlined style={{ color: '#667eea' }} />
           {formatDateTime(date)}
-        </>
+        </Space>
       ),
       sorter: (a, b) => new Date(a.MeetingDateTime).getTime() - new Date(b.MeetingDateTime).getTime(),
     },
@@ -65,14 +101,21 @@ export default function StudentMeetingsPage() {
       title: 'Location',
       dataIndex: 'MeetingLocation',
       key: 'location',
-      render: (text) => text || '-',
+      render: (text) => text ? (
+        <Space>
+          <EnvironmentOutlined style={{ color: '#52c41a' }} />
+          {text}
+        </Space>
+      ) : <span style={{ color: '#d9d9d9' }}>—</span>,
     },
     {
       title: 'Status',
       dataIndex: 'MeetingStatus',
       key: 'status',
       render: (status) => (
-        <Tag color={getMeetingStatusColor(status)}>{status}</Tag>
+        <Tag color={getMeetingStatusColor(status)} style={{ borderRadius: 12 }}>
+          {status}
+        </Tag>
       ),
     },
     {
@@ -84,13 +127,13 @@ export default function StudentMeetingsPage() {
         );
 
         if (!myAttendance) {
-          return <Tag>N/A</Tag>;
+          return <Tag style={{ borderRadius: 12 }}>N/A</Tag>;
         }
 
         return myAttendance.IsPresent ? (
-          <Badge status="success" text="Present" />
+          <Tag color="success" style={{ borderRadius: 12 }}>✓ Present</Tag>
         ) : (
-          <Badge status="error" text="Absent" />
+          <Tag color="error" style={{ borderRadius: 12 }}>✗ Absent</Tag>
         );
       },
     },
@@ -101,7 +144,7 @@ export default function StudentMeetingsPage() {
         const myAttendance = record.ProjectMeetingAttendance?.find(
           (a) => a.StudentID === currentStudent?.StudentID
         );
-        return myAttendance?.AttendanceRemarks || '-';
+        return myAttendance?.AttendanceRemarks || <span style={{ color: '#d9d9d9' }}>—</span>;
       },
     },
   ];
@@ -118,53 +161,108 @@ export default function StudentMeetingsPage() {
 
   return (
     <AppLayout>
-      <Title level={2} style={{ marginBottom: 24 }}>My Meetings</Title>
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+      >
+        <motion.div variants={itemVariants}>
+          <PageHeader
+            title="My Meetings"
+            subtitle="View your scheduled and past project meetings"
+            breadcrumbs={[
+              { title: 'Student', href: '/student' },
+              { title: 'Meetings' },
+            ]}
+          />
+        </motion.div>
 
-      <Card>
-        <Tabs
-          defaultActiveKey="upcoming"
-          items={[
-            {
-              key: 'upcoming',
-              label: (
-                <span>
-                  Upcoming
-                  <Badge count={upcomingMeetings.length} style={{ marginLeft: 8 }} />
-                </span>
-              ),
-              children: upcomingMeetings.length === 0 ? (
-                <Empty description="No upcoming meetings" />
-              ) : (
-                <Table<ProjectMeeting>
-                  columns={columns}
-                  dataSource={upcomingMeetings}
-                  rowKey="ProjectMeetingID"
-                  pagination={{ pageSize: 10 }}
-                />
-              ),
-            },
-            {
-              key: 'past',
-              label: (
-                <span>
-                  Past
-                  <Badge count={pastMeetings.length} style={{ marginLeft: 8, backgroundColor: '#999' }} />
-                </span>
-              ),
-              children: pastMeetings.length === 0 ? (
-                <Empty description="No past meetings" />
-              ) : (
-                <Table<ProjectMeeting>
-                  columns={columns}
-                  dataSource={pastMeetings}
-                  rowKey="ProjectMeetingID"
-                  pagination={{ pageSize: 10 }}
-                />
-              ),
-            },
-          ]}
-        />
-      </Card>
+        {/* Stats Row */}
+        <motion.div variants={itemVariants}>
+          <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+            <Col xs={24} sm={8}>
+              <StatCard
+                title="Total Meetings"
+                value={stats.total}
+                icon={<CalendarOutlined />}
+                color="#667eea"
+              />
+            </Col>
+            <Col xs={24} sm={8}>
+              <StatCard
+                title="Upcoming"
+                value={stats.upcoming}
+                icon={<ClockCircleOutlined />}
+                color="#faad14"
+              />
+            </Col>
+            <Col xs={24} sm={8}>
+              <StatCard
+                title="Attended"
+                value={stats.attended}
+                icon={<CheckCircleOutlined />}
+                color="#52c41a"
+              />
+            </Col>
+          </Row>
+        </motion.div>
+
+        <motion.div variants={itemVariants}>
+          <Card style={{ borderRadius: 16 }}>
+            <Tabs
+              defaultActiveKey="upcoming"
+              items={[
+                {
+                  key: 'upcoming',
+                  label: (
+                    <span>
+                      <ClockCircleOutlined style={{ marginRight: 8 }} />
+                      Upcoming
+                      <Badge 
+                        count={upcomingMeetings.length} 
+                        style={{ marginLeft: 8, backgroundColor: '#667eea' }} 
+                      />
+                    </span>
+                  ),
+                  children: upcomingMeetings.length === 0 ? (
+                    <Empty description="No upcoming meetings" style={{ padding: 48 }} />
+                  ) : (
+                    <Table<ProjectMeeting>
+                      columns={columns}
+                      dataSource={upcomingMeetings}
+                      rowKey="ProjectMeetingID"
+                      pagination={{ pageSize: 10 }}
+                    />
+                  ),
+                },
+                {
+                  key: 'past',
+                  label: (
+                    <span>
+                      <CheckCircleOutlined style={{ marginRight: 8 }} />
+                      Past
+                      <Badge 
+                        count={pastMeetings.length} 
+                        style={{ marginLeft: 8, backgroundColor: '#8c8c8c' }} 
+                      />
+                    </span>
+                  ),
+                  children: pastMeetings.length === 0 ? (
+                    <Empty description="No past meetings" style={{ padding: 48 }} />
+                  ) : (
+                    <Table<ProjectMeeting>
+                      columns={columns}
+                      dataSource={pastMeetings}
+                      rowKey="ProjectMeetingID"
+                      pagination={{ pageSize: 10 }}
+                    />
+                  ),
+                },
+              ]}
+            />
+          </Card>
+        </motion.div>
+      </motion.div>
     </AppLayout>
   );
 }

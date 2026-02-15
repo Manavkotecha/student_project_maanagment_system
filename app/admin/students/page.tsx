@@ -1,12 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Button, Form, Input, Space, Popconfirm, Typography, Tag } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import React, { useState, useMemo } from 'react';
+import { Button, Form, Input, Space, Popconfirm, Tag, Avatar, Row, Col } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, UserOutlined, TeamOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
+import { motion } from 'framer-motion';
 import AppLayout from '@/components/layout/AppLayout';
 import DataTable from '@/components/ui/DataTable';
 import FormModal from '@/components/ui/FormModal';
+import PageHeader from '@/components/ui/PageHeader';
+import StatCard from '@/components/ui/StatCard';
 import {
   useStudents,
   useCreateStudent,
@@ -14,9 +17,7 @@ import {
   useDeleteStudent,
 } from '@/hooks/useStudents';
 import type { Student, CreateStudentInput } from '@/app/types';
-import { formatDate } from '@/app/lib/utils';
-
-const { Title } = Typography;
+import { formatDate, getInitials } from '@/app/lib/utils';
 
 interface StudentWithGroups extends Student {
   ProjectGroupMember?: Array<{
@@ -28,6 +29,19 @@ interface StudentWithGroups extends Student {
   }>;
 }
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+};
+
 export default function StudentsPage() {
   const [form] = Form.useForm<CreateStudentInput>();
   const [modalOpen, setModalOpen] = useState(false);
@@ -38,6 +52,19 @@ export default function StudentsPage() {
   const createMutation = useCreateStudent();
   const updateMutation = useUpdateStudent();
   const deleteMutation = useDeleteStudent();
+
+  // Calculate stats
+  const stats = useMemo(() => {
+    if (!students) return { total: 0, inGroups: 0, unassigned: 0 };
+    const inGroups = students.filter(
+      (s: StudentWithGroups) => (s.ProjectGroupMember?.length || 0) > 0
+    ).length;
+    return { 
+      total: students.length, 
+      inGroups, 
+      unassigned: students.length - inGroups 
+    };
+  }, [students]);
 
   const handleAdd = () => {
     form.resetFields();
@@ -73,28 +100,32 @@ export default function StudentsPage() {
 
   const columns: ColumnsType<StudentWithGroups> = [
     {
-      title: 'ID',
-      dataIndex: 'StudentID',
-      key: 'id',
-      width: 80,
-      sorter: (a, b) => a.StudentID - b.StudentID,
-    },
-    {
-      title: 'Name',
-      dataIndex: 'StudentName',
-      key: 'name',
+      title: 'Student',
+      key: 'student',
+      render: (_, record) => (
+        <Space>
+          <Avatar
+            size={40}
+            style={{
+              background: 'linear-gradient(135deg, #52c41a 0%, #1890ff 100%)',
+              fontWeight: 600,
+            }}
+          >
+            {getInitials(record.StudentName)}
+          </Avatar>
+          <div>
+            <div style={{ fontWeight: 500 }}>{record.StudentName}</div>
+            <div style={{ fontSize: 12, color: '#8c8c8c' }}>{record.Email}</div>
+          </div>
+        </Space>
+      ),
       sorter: (a, b) => a.StudentName.localeCompare(b.StudentName),
-    },
-    {
-      title: 'Email',
-      dataIndex: 'Email',
-      key: 'email',
     },
     {
       title: 'Phone',
       dataIndex: 'Phone',
       key: 'phone',
-      render: (text) => text || '-',
+      render: (text) => text || <span style={{ color: '#d9d9d9' }}>—</span>,
     },
     {
       title: 'Groups',
@@ -107,7 +138,11 @@ export default function StudentsPage() {
         return (
           <Space size={4} wrap>
             {groups.map((g) => (
-              <Tag key={g.ProjectGroup.ProjectGroupID} color="blue">
+              <Tag 
+                key={g.ProjectGroup.ProjectGroupID} 
+                color="blue"
+                style={{ borderRadius: 12 }}
+              >
                 {g.ProjectGroup.ProjectGroupName}
               </Tag>
             ))}
@@ -132,6 +167,7 @@ export default function StudentsPage() {
             type="text"
             icon={<EditOutlined />}
             onClick={() => handleEdit(record)}
+            style={{ color: '#667eea' }}
           />
           <Popconfirm
             title="Delete student?"
@@ -150,22 +186,69 @@ export default function StudentsPage() {
 
   return (
     <AppLayout>
-      <Title level={2} style={{ marginBottom: 24 }}>Student Management</Title>
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+      >
+        <motion.div variants={itemVariants}>
+          <PageHeader
+            title="Student Management"
+            subtitle="Manage student records and group assignments"
+            breadcrumbs={[
+              { title: 'Admin', href: '/admin' },
+              { title: 'Students' },
+            ]}
+          />
+        </motion.div>
 
-      <DataTable<StudentWithGroups>
-        columns={columns}
-        dataSource={students || []}
-        rowKey="StudentID"
-        loading={isLoading}
-        onSearch={(value) => setSearchQuery(value)}
-        onRefresh={() => refetch()}
-        searchPlaceholder="Search students by name or email..."
-        extraActions={
-          <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
-            Add Student
-          </Button>
-        }
-      />
+        {/* Stats Row */}
+        <motion.div variants={itemVariants}>
+          <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+            <Col xs={24} sm={8}>
+              <StatCard
+                title="Total Students"
+                value={stats.total}
+                icon={<UserOutlined />}
+                color="#667eea"
+              />
+            </Col>
+            <Col xs={24} sm={8}>
+              <StatCard
+                title="In Groups"
+                value={stats.inGroups}
+                icon={<TeamOutlined />}
+                color="#52c41a"
+              />
+            </Col>
+            <Col xs={24} sm={8}>
+              <StatCard
+                title="Unassigned"
+                value={stats.unassigned}
+                icon={<UserOutlined />}
+                color="#faad14"
+              />
+            </Col>
+          </Row>
+        </motion.div>
+
+        <motion.div variants={itemVariants}>
+          <DataTable<StudentWithGroups>
+            columns={columns}
+            dataSource={students || []}
+            rowKey="StudentID"
+            loading={isLoading}
+            onSearch={(value) => setSearchQuery(value)}
+            onRefresh={() => refetch()}
+            searchPlaceholder="Search students by name or email..."
+            extraActions={
+              <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
+                Add Student
+              </Button>
+            }
+          />
+        </motion.div>
+      </motion.div>
 
       <FormModal
         title={editingId ? 'Edit Student' : 'Add Student'}

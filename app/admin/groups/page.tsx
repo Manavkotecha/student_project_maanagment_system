@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Button,
   Form,
@@ -8,7 +8,6 @@ import {
   Select,
   Space,
   Popconfirm,
-  Typography,
   Tag,
   Card,
   Drawer,
@@ -17,6 +16,8 @@ import {
   InputNumber,
   Divider,
   App,
+  Row,
+  Col,
 } from 'antd';
 import {
   PlusOutlined,
@@ -26,11 +27,16 @@ import {
   UserAddOutlined,
   UserDeleteOutlined,
   CrownOutlined,
+  ProjectOutlined,
+  PercentageOutlined,
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
+import { motion, AnimatePresence } from 'framer-motion';
 import AppLayout from '@/components/layout/AppLayout';
 import DataTable from '@/components/ui/DataTable';
 import FormModal from '@/components/ui/FormModal';
+import PageHeader from '@/components/ui/PageHeader';
+import StatCard from '@/components/ui/StatCard';
 import {
   useGroups,
   useCreateGroup,
@@ -44,7 +50,18 @@ import { useStudents } from '@/hooks/useStudents';
 import type { ProjectGroup, CreateGroupInput } from '@/app/types';
 import { formatDate, getInitials } from '@/app/lib/utils';
 
-const { Title, Text } = Typography;
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+};
 
 export default function GroupsPage() {
   const [form] = Form.useForm<CreateGroupInput>();
@@ -64,6 +81,22 @@ export default function GroupsPage() {
   const updateMutation = useUpdateGroup();
   const deleteMutation = useDeleteGroup();
   const memberMutation = useManageMember();
+
+  // Calculate stats
+  const stats = useMemo(() => {
+    if (!groups) return { total: 0, totalMembers: 0, avgCPI: 0 };
+    const totalMembers = groups.reduce(
+      (acc: number, g: ProjectGroup) => acc + (g.ProjectGroupMember?.length || 0),
+      0
+    );
+    const avgCPIs = groups
+      .map((g: ProjectGroup) => g.AverageCPI)
+      .filter((cpi): cpi is number => cpi !== null && cpi !== undefined);
+    const avgCPI = avgCPIs.length > 0
+      ? avgCPIs.reduce((a: number, b: number) => a + Number(b), 0) / avgCPIs.length
+      : 0;
+    return { total: groups.length, totalMembers, avgCPI };
+  }, [groups]);
 
   const handleAdd = () => {
     form.resetFields();
@@ -173,45 +206,41 @@ export default function GroupsPage() {
 
   const columns: ColumnsType<ProjectGroup> = [
     {
-      title: 'ID',
-      dataIndex: 'ProjectGroupID',
-      key: 'id',
-      width: 80,
-    },
-    {
-      title: 'Group Name',
-      dataIndex: 'ProjectGroupName',
-      key: 'name',
+      title: 'Group',
+      key: 'group',
+      render: (_, record) => (
+        <div>
+          <div style={{ fontWeight: 600, color: '#262626' }}>{record.ProjectGroupName}</div>
+          <div style={{ fontSize: 12, color: '#8c8c8c' }}>{record.ProjectTitle}</div>
+        </div>
+      ),
       sorter: (a, b) => a.ProjectGroupName.localeCompare(b.ProjectGroupName),
-    },
-    {
-      title: 'Project Title',
-      dataIndex: 'ProjectTitle',
-      key: 'title',
-      ellipsis: true,
     },
     {
       title: 'Type',
       key: 'type',
       render: (_, record) => (
-        <Tag color="purple">{record.ProjectType?.ProjectTypeName}</Tag>
+        <Tag color="purple" style={{ borderRadius: 12 }}>
+          {record.ProjectType?.ProjectTypeName}
+        </Tag>
       ),
     },
     {
       title: 'Guide',
       dataIndex: 'GuideStaffName',
       key: 'guide',
-      render: (text) => text || '-',
+      render: (text) => text || <span style={{ color: '#d9d9d9' }}>—</span>,
     },
     {
       title: 'Members',
       key: 'members',
-      width: 100,
+      width: 120,
       render: (_, record) => (
         <Button
-          type="link"
-          icon={<TeamOutlined />}
+          type="text"
+          icon={<TeamOutlined style={{ color: '#667eea' }} />}
           onClick={() => handleViewMembers(record)}
+          style={{ fontWeight: 500 }}
         >
           {record.ProjectGroupMember?.length || 0}
         </Button>
@@ -222,7 +251,11 @@ export default function GroupsPage() {
       dataIndex: 'AverageCPI',
       key: 'cpi',
       width: 100,
-      render: (val) => (val ? Number(val).toFixed(2) : '-'),
+      render: (val) => (
+        <Tag color={val >= 8 ? 'green' : val >= 6 ? 'blue' : 'default'} style={{ borderRadius: 12 }}>
+          {val ? Number(val).toFixed(2) : '—'}
+        </Tag>
+      ),
     },
     {
       title: 'Created',
@@ -241,6 +274,7 @@ export default function GroupsPage() {
             type="text"
             icon={<EditOutlined />}
             onClick={() => handleEdit(record)}
+            style={{ color: '#667eea' }}
           />
           <Popconfirm
             title="Delete group?"
@@ -259,22 +293,69 @@ export default function GroupsPage() {
 
   return (
     <AppLayout>
-      <Title level={2} style={{ marginBottom: 24 }}>Group Management</Title>
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+      >
+        <motion.div variants={itemVariants}>
+          <PageHeader
+            title="Group Management"
+            subtitle="Create and manage project groups, assign members and guides"
+            breadcrumbs={[
+              { title: 'Admin', href: '/admin' },
+              { title: 'Groups' },
+            ]}
+          />
+        </motion.div>
 
-      <DataTable<ProjectGroup>
-        columns={columns}
-        dataSource={groups || []}
-        rowKey="ProjectGroupID"
-        loading={isLoading}
-        onSearch={(value) => setSearchQuery(value)}
-        onRefresh={() => refetch()}
-        searchPlaceholder="Search groups..."
-        extraActions={
-          <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
-            Create Group
-          </Button>
-        }
-      />
+        {/* Stats Row */}
+        <motion.div variants={itemVariants}>
+          <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+            <Col xs={24} sm={8}>
+              <StatCard
+                title="Total Groups"
+                value={stats.total}
+                icon={<ProjectOutlined />}
+                color="#667eea"
+              />
+            </Col>
+            <Col xs={24} sm={8}>
+              <StatCard
+                title="Total Members"
+                value={stats.totalMembers}
+                icon={<TeamOutlined />}
+                color="#764ba2"
+              />
+            </Col>
+            <Col xs={24} sm={8}>
+              <StatCard
+                title="Average CPI"
+                value={stats.avgCPI.toFixed(2)}
+                icon={<PercentageOutlined />}
+                color="#52c41a"
+              />
+            </Col>
+          </Row>
+        </motion.div>
+
+        <motion.div variants={itemVariants}>
+          <DataTable<ProjectGroup>
+            columns={columns}
+            dataSource={groups || []}
+            rowKey="ProjectGroupID"
+            loading={isLoading}
+            onSearch={(value) => setSearchQuery(value)}
+            onRefresh={() => refetch()}
+            searchPlaceholder="Search groups..."
+            extraActions={
+              <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
+                Create Group
+              </Button>
+            }
+          />
+        </motion.div>
+      </motion.div>
 
       {/* Create/Edit Modal */}
       <FormModal
@@ -345,14 +426,26 @@ export default function GroupsPage() {
 
       {/* Members Drawer */}
       <Drawer
-        title={`Members - ${selectedGroup?.ProjectGroupName}`}
+        title={
+          <Space>
+            <TeamOutlined style={{ color: '#667eea' }} />
+            <span>Members - {selectedGroup?.ProjectGroupName}</span>
+          </Space>
+        }
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         size="default"
       >
         {selectedGroup && (
           <>
-            <Card size="small" style={{ marginBottom: 16 }}>
+            <Card 
+              size="small" 
+              style={{ 
+                marginBottom: 16, 
+                background: 'linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%)',
+                border: 'none'
+              }}
+            >
               <Form form={memberForm} layout="inline">
                 <Form.Item
                   name="studentId"
@@ -382,77 +475,90 @@ export default function GroupsPage() {
             </Card>
 
             <Flex vertical gap="middle">
-              {(selectedGroup.ProjectGroupMember || []).map((item) => (
-                <Card
-                  key={item.StudentID}
-                  size="small"
-                  styles={{ body: { padding: '16px' } }}
-                  hoverable
-                >
-                  <Flex justify="space-between" align="flex-start" gap="middle">
-                    <Flex gap="middle" align="flex-start" style={{ flex: 1, minWidth: 0 }}>
-                      <Avatar 
-                        size={48}
-                        style={{ 
-                          backgroundColor: item.IsGroupLeader ? '#faad14' : '#1677ff',
-                          flexShrink: 0 
-                        }}
-                      >
-                        {getInitials(item.Student?.StudentName)}
-                      </Avatar>
-                      <Flex vertical gap="8px" style={{ flex: 1, minWidth: 0 }}>
-                        <Flex align="center" gap="small" wrap="wrap">
-                          <Text strong style={{ fontSize: '15px' }}>
-                            {item.Student?.StudentName}
-                          </Text>
-                          {item.IsGroupLeader && <Tag color="gold">Leader</Tag>}
+              <AnimatePresence>
+                {(selectedGroup.ProjectGroupMember || []).map((item, index) => (
+                  <motion.div
+                    key={item.StudentID}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 20 }}
+                    transition={{ delay: index * 0.05 }}
+                  >
+                    <Card
+                      size="small"
+                      styles={{ body: { padding: '16px' } }}
+                      hoverable
+                      style={{
+                        borderLeft: item.IsGroupLeader ? '3px solid #faad14' : '3px solid #667eea',
+                      }}
+                    >
+                      <Flex justify="space-between" align="flex-start" gap="middle">
+                        <Flex gap="middle" align="flex-start" style={{ flex: 1, minWidth: 0 }}>
+                          <Avatar 
+                            size={48}
+                            style={{ 
+                              backgroundColor: item.IsGroupLeader ? '#faad14' : '#667eea',
+                              flexShrink: 0 
+                            }}
+                          >
+                            {getInitials(item.Student?.StudentName)}
+                          </Avatar>
+                          <Flex vertical gap="8px" style={{ flex: 1, minWidth: 0 }}>
+                            <Flex align="center" gap="small" wrap="wrap">
+                              <span style={{ fontWeight: 600, fontSize: '15px' }}>
+                                {item.Student?.StudentName}
+                              </span>
+                              {item.IsGroupLeader && (
+                                <Tag color="gold" icon={<CrownOutlined />}>Leader</Tag>
+                              )}
+                            </Flex>
+                            <span 
+                              style={{ 
+                                fontSize: '13px',
+                                color: '#8c8c8c',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap'
+                              }}
+                            >
+                              {item.Student?.Email}
+                            </span>
+                            {item.StudentCGPA && (
+                              <Tag color="blue" style={{ width: 'fit-content', borderRadius: 12 }}>
+                                CGPA: {Number(item.StudentCGPA).toFixed(2)}
+                              </Tag>
+                            )}
+                          </Flex>
                         </Flex>
-                        <Text 
-                          type="secondary" 
-                          style={{ 
-                            fontSize: '13px',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap'
-                          }}
-                        >
-                          {item.Student?.Email}
-                        </Text>
-                        {item.StudentCGPA && (
-                          <Text type="secondary" style={{ fontSize: '13px' }}>
-                            <strong>CGPA:</strong> {Number(item.StudentCGPA).toFixed(2)}
-                          </Text>
-                        )}
+                        <Flex align="center" gap="small" style={{ flexShrink: 0 }}>
+                          {!item.IsGroupLeader && (
+                            <Button
+                              type="text"
+                              size="small"
+                              icon={<CrownOutlined />}
+                              onClick={() => handleSetLeader(item.StudentID)}
+                              style={{ color: '#faad14' }}
+                            >
+                              Set Leader
+                            </Button>
+                          )}
+                          <Popconfirm
+                            title="Remove member?"
+                            onConfirm={() => handleRemoveMember(item.StudentID)}
+                          >
+                            <Button
+                              type="text"
+                              size="small"
+                              danger
+                              icon={<UserDeleteOutlined />}
+                            />
+                          </Popconfirm>
+                        </Flex>
                       </Flex>
-                    </Flex>
-                    <Flex align="center" gap="small" style={{ flexShrink: 0 }}>
-                      {!item.IsGroupLeader && (
-                        <Button
-                          type="text"
-                          size="small"
-                          icon={<CrownOutlined />}
-                          onClick={() => handleSetLeader(item.StudentID)}
-                          style={{ flexShrink: 0 }}
-                        >
-                          Set Leader
-                        </Button>
-                      )}
-                      <Popconfirm
-                        title="Remove member?"
-                        onConfirm={() => handleRemoveMember(item.StudentID)}
-                      >
-                        <Button
-                          type="text"
-                          size="small"
-                          danger
-                          icon={<UserDeleteOutlined />}
-                          style={{ flexShrink: 0 }}
-                        />
-                      </Popconfirm>
-                    </Flex>
-                  </Flex>
-                </Card>
-              ))}
+                    </Card>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             </Flex>
           </>
         )}

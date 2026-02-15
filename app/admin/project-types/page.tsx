@@ -1,12 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Button, Form, Input, Space, Popconfirm, Typography, Tag } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import React, { useState, useMemo } from 'react';
+import { Button, Form, Input, Space, Popconfirm, Tag, Row, Col } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, FolderOutlined, ProjectOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
+import { motion } from 'framer-motion';
 import AppLayout from '@/components/layout/AppLayout';
 import DataTable from '@/components/ui/DataTable';
 import FormModal from '@/components/ui/FormModal';
+import PageHeader from '@/components/ui/PageHeader';
+import StatCard from '@/components/ui/StatCard';
 import {
   useProjectTypes,
   useCreateProjectType,
@@ -16,11 +19,22 @@ import {
 import type { ProjectType, CreateProjectTypeInput } from '@/app/types';
 import { formatDate } from '@/app/lib/utils';
 
-const { Title } = Typography;
-
 interface ProjectTypeWithCount extends ProjectType {
   _count?: { ProjectGroup: number };
 }
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+};
 
 export default function ProjectTypesPage() {
   const [form] = Form.useForm<CreateProjectTypeInput>();
@@ -33,7 +47,7 @@ export default function ProjectTypesPage() {
   const updateMutation = useUpdateProjectType();
   const deleteMutation = useDeleteProjectType();
 
-  const filteredData = React.useMemo(() => {
+  const filteredData = useMemo(() => {
     if (!projectTypes) return [];
     if (!searchQuery) return projectTypes;
     return projectTypes.filter(
@@ -42,6 +56,16 @@ export default function ProjectTypesPage() {
         pt.Description?.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [projectTypes, searchQuery]);
+
+  // Calculate stats
+  const stats = useMemo(() => {
+    if (!projectTypes) return { total: 0, totalProjects: 0 };
+    const totalProjects = projectTypes.reduce(
+      (acc: number, pt: ProjectTypeWithCount) => acc + (pt._count?.ProjectGroup || 0),
+      0
+    );
+    return { total: projectTypes.length, totalProjects };
+  }, [projectTypes]);
 
   const handleAdd = () => {
     form.resetFields();
@@ -86,6 +110,12 @@ export default function ProjectTypesPage() {
       dataIndex: 'ProjectTypeName',
       key: 'name',
       sorter: (a, b) => a.ProjectTypeName.localeCompare(b.ProjectTypeName),
+      render: (text) => (
+        <Space>
+          <FolderOutlined style={{ color: '#667eea' }} />
+          <span style={{ fontWeight: 500 }}>{text}</span>
+        </Space>
+      ),
     },
     {
       title: 'Description',
@@ -99,7 +129,9 @@ export default function ProjectTypesPage() {
       key: 'projects',
       width: 100,
       render: (_, record) => (
-        <Tag color="blue">{record._count?.ProjectGroup || 0}</Tag>
+        <Tag color="blue" style={{ borderRadius: 12, fontWeight: 500 }}>
+          {record._count?.ProjectGroup || 0}
+        </Tag>
       ),
     },
     {
@@ -119,6 +151,7 @@ export default function ProjectTypesPage() {
             type="text"
             icon={<EditOutlined />}
             onClick={() => handleEdit(record)}
+            style={{ color: '#667eea' }}
           />
           <Popconfirm
             title="Delete project type?"
@@ -142,22 +175,61 @@ export default function ProjectTypesPage() {
 
   return (
     <AppLayout>
-      <Title level={2} style={{ marginBottom: 24 }}>Project Types</Title>
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+      >
+        <motion.div variants={itemVariants}>
+          <PageHeader
+            title="Project Types"
+            subtitle="Manage project categories like Major, Minor, and Research projects"
+            breadcrumbs={[
+              { title: 'Admin', href: '/admin' },
+              { title: 'Project Types' },
+            ]}
+          />
+        </motion.div>
 
-      <DataTable<ProjectTypeWithCount>
-        columns={columns}
-        dataSource={filteredData}
-        rowKey="ProjectTypeID"
-        loading={isLoading}
-        onSearch={setSearchQuery}
-        onRefresh={() => refetch()}
-        searchPlaceholder="Search project types..."
-        extraActions={
-          <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
-            Add Project Type
-          </Button>
-        }
-      />
+        {/* Stats Row */}
+        <motion.div variants={itemVariants}>
+          <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+            <Col xs={24} sm={12}>
+              <StatCard
+                title="Total Types"
+                value={stats.total}
+                icon={<FolderOutlined />}
+                color="#667eea"
+              />
+            </Col>
+            <Col xs={24} sm={12}>
+              <StatCard
+                title="Total Projects"
+                value={stats.totalProjects}
+                icon={<ProjectOutlined />}
+                color="#764ba2"
+              />
+            </Col>
+          </Row>
+        </motion.div>
+
+        <motion.div variants={itemVariants}>
+          <DataTable<ProjectTypeWithCount>
+            columns={columns}
+            dataSource={filteredData}
+            rowKey="ProjectTypeID"
+            loading={isLoading}
+            onSearch={setSearchQuery}
+            onRefresh={() => refetch()}
+            searchPlaceholder="Search project types..."
+            extraActions={
+              <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
+                Add Project Type
+              </Button>
+            }
+          />
+        </motion.div>
+      </motion.div>
 
       <FormModal
         title={editingId ? 'Edit Project Type' : 'Add Project Type'}

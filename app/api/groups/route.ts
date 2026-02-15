@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Create group with transaction for members
-        const group = await prisma.$transaction(async (tx: typeof prisma) => {
+        const group = await prisma.$transaction(async (tx) => {
             const newGroup = await tx.projectGroup.create({
                 data: {
                     ProjectGroupName: validation.data.ProjectGroupName,

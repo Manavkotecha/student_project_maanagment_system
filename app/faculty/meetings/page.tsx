@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Button,
   Form,
@@ -16,6 +16,9 @@ import {
   Checkbox,
   Tabs,
   Card,
+  Row,
+  Col,
+  Empty,
 } from 'antd';
 import {
   PlusOutlined,
@@ -23,12 +26,18 @@ import {
   DeleteOutlined,
   CheckCircleOutlined,
   TeamOutlined,
+  CalendarOutlined,
+  ClockCircleOutlined,
+  EnvironmentOutlined,
 } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import dayjs from 'dayjs';
+import { motion } from 'framer-motion';
 import AppLayout from '@/components/layout/AppLayout';
 import DataTable from '@/components/ui/DataTable';
 import FormModal from '@/components/ui/FormModal';
+import PageHeader from '@/components/ui/PageHeader';
+import StatCard from '@/components/ui/StatCard';
 import {
   useMeetings,
   useCreateMeeting,
@@ -41,7 +50,20 @@ import { useStaff } from '@/hooks/useStaff';
 import type { ProjectMeeting, CreateMeetingInput } from '@/app/types';
 import { formatDateTime, getMeetingStatusColor } from '@/app/lib/utils';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+};
 
 export default function FacultyMeetingsPage() {
   const [form] = Form.useForm();
@@ -66,6 +88,17 @@ export default function FacultyMeetingsPage() {
   const pastMeetings = meetings?.filter(
     (m) => new Date(m.MeetingDateTime) < new Date()
   ) || [];
+
+  // Calculate stats
+  const stats = useMemo(() => {
+    if (!meetings) return { total: 0, upcoming: 0, completed: 0 };
+    const completed = meetings.filter((m) => m.MeetingStatus === 'Completed').length;
+    return { 
+      total: meetings.length, 
+      upcoming: upcomingMeetings.length, 
+      completed 
+    };
+  }, [meetings, upcomingMeetings]);
 
   const handleAdd = () => {
     form.resetFields();
@@ -142,14 +175,24 @@ export default function FacultyMeetingsPage() {
       title: 'Group',
       key: 'group',
       render: (_, record) => (
-        <Text strong>{record.ProjectGroup?.ProjectGroupName}</Text>
+        <div>
+          <Text strong>{record.ProjectGroup?.ProjectGroupName}</Text>
+          <div style={{ fontSize: 12, color: '#8c8c8c' }}>
+            {record.ProjectGroup?.ProjectTitle}
+          </div>
+        </div>
       ),
     },
     {
       title: 'Date & Time',
       dataIndex: 'MeetingDateTime',
       key: 'datetime',
-      render: (date) => formatDateTime(date),
+      render: (date) => (
+        <Space>
+          <CalendarOutlined style={{ color: '#667eea' }} />
+          {formatDateTime(date)}
+        </Space>
+      ),
       sorter: (a, b) => new Date(a.MeetingDateTime).getTime() - new Date(b.MeetingDateTime).getTime(),
     },
     {
@@ -162,14 +205,21 @@ export default function FacultyMeetingsPage() {
       title: 'Location',
       dataIndex: 'MeetingLocation',
       key: 'location',
-      render: (text) => text || '-',
+      render: (text) => text ? (
+        <Space>
+          <EnvironmentOutlined style={{ color: '#52c41a' }} />
+          {text}
+        </Space>
+      ) : <span style={{ color: '#d9d9d9' }}>—</span>,
     },
     {
       title: 'Status',
       dataIndex: 'MeetingStatus',
       key: 'status',
       render: (status) => (
-        <Tag color={getMeetingStatusColor(status)}>{status}</Tag>
+        <Tag color={getMeetingStatusColor(status)} style={{ borderRadius: 12 }}>
+          {status}
+        </Tag>
       ),
     },
     {
@@ -180,10 +230,11 @@ export default function FacultyMeetingsPage() {
         const present = record.ProjectMeetingAttendance?.filter((a) => a.IsPresent).length || 0;
         return (
           <Button
-            type="link"
+            type="text"
             size="small"
-            icon={<TeamOutlined />}
+            icon={<TeamOutlined style={{ color: '#667eea' }} />}
             onClick={() => handleAttendance(record)}
+            style={{ fontWeight: 500 }}
           >
             {present}/{total}
           </Button>
@@ -200,7 +251,7 @@ export default function FacultyMeetingsPage() {
             <Button
               type="text"
               size="small"
-              icon={<CheckCircleOutlined />}
+              icon={<CheckCircleOutlined style={{ color: '#52c41a' }} />}
               onClick={() => handleMarkComplete(record)}
             >
               Complete
@@ -210,6 +261,7 @@ export default function FacultyMeetingsPage() {
             type="text"
             icon={<EditOutlined />}
             onClick={() => handleEdit(record)}
+            style={{ color: '#667eea' }}
           />
           <Popconfirm
             title="Delete meeting?"
@@ -227,49 +279,110 @@ export default function FacultyMeetingsPage() {
 
   return (
     <AppLayout>
-      <Title level={2} style={{ marginBottom: 24 }}>Meetings</Title>
+      <motion.div
+        initial="hidden"
+        animate="visible"
+        variants={containerVariants}
+      >
+        <motion.div variants={itemVariants}>
+          <PageHeader
+            title="Meetings"
+            subtitle="Schedule and manage project meetings with students"
+            breadcrumbs={[
+              { title: 'Faculty', href: '/faculty' },
+              { title: 'Meetings' },
+            ]}
+          />
+        </motion.div>
 
-      <Card>
-        <Tabs
-          activeKey={activeTab}
-          onChange={setActiveTab}
-          tabBarExtraContent={
-            <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
-              Schedule Meeting
-            </Button>
-          }
-          items={[
-            {
-              key: 'upcoming',
-              label: `Upcoming (${upcomingMeetings.length})`,
-              children: (
-                <DataTable<ProjectMeeting>
-                  columns={columns}
-                  dataSource={upcomingMeetings}
-                  rowKey="ProjectMeetingID"
-                  loading={isLoading}
-                  showSearch={false}
-                  onRefresh={() => refetch()}
-                />
-              ),
-            },
-            {
-              key: 'past',
-              label: `Past (${pastMeetings.length})`,
-              children: (
-                <DataTable<ProjectMeeting>
-                  columns={columns}
-                  dataSource={pastMeetings}
-                  rowKey="ProjectMeetingID"
-                  loading={isLoading}
-                  showSearch={false}
-                  onRefresh={() => refetch()}
-                />
-              ),
-            },
-          ]}
-        />
-      </Card>
+        {/* Stats Row */}
+        <motion.div variants={itemVariants}>
+          <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+            <Col xs={24} sm={8}>
+              <StatCard
+                title="Total Meetings"
+                value={stats.total}
+                icon={<CalendarOutlined />}
+                color="#667eea"
+              />
+            </Col>
+            <Col xs={24} sm={8}>
+              <StatCard
+                title="Upcoming"
+                value={stats.upcoming}
+                icon={<ClockCircleOutlined />}
+                color="#faad14"
+              />
+            </Col>
+            <Col xs={24} sm={8}>
+              <StatCard
+                title="Completed"
+                value={stats.completed}
+                icon={<CheckCircleOutlined />}
+                color="#52c41a"
+              />
+            </Col>
+          </Row>
+        </motion.div>
+
+        <motion.div variants={itemVariants}>
+          <Card style={{ borderRadius: 16 }}>
+            <Tabs
+              activeKey={activeTab}
+              onChange={setActiveTab}
+              tabBarExtraContent={
+                <Button type="primary" icon={<PlusOutlined />} onClick={handleAdd}>
+                  Schedule Meeting
+                </Button>
+              }
+              items={[
+                {
+                  key: 'upcoming',
+                  label: (
+                    <span>
+                      <ClockCircleOutlined style={{ marginRight: 8 }} />
+                      Upcoming ({upcomingMeetings.length})
+                    </span>
+                  ),
+                  children: upcomingMeetings.length === 0 ? (
+                    <Empty description="No upcoming meetings" style={{ padding: 48 }} />
+                  ) : (
+                    <DataTable<ProjectMeeting>
+                      columns={columns}
+                      dataSource={upcomingMeetings}
+                      rowKey="ProjectMeetingID"
+                      loading={isLoading}
+                      showSearch={false}
+                      onRefresh={() => refetch()}
+                    />
+                  ),
+                },
+                {
+                  key: 'past',
+                  label: (
+                    <span>
+                      <CheckCircleOutlined style={{ marginRight: 8 }} />
+                      Past ({pastMeetings.length})
+                    </span>
+                  ),
+                  children: pastMeetings.length === 0 ? (
+                    <Empty description="No past meetings" style={{ padding: 48 }} />
+                  ) : (
+                    <DataTable<ProjectMeeting>
+                      columns={columns}
+                      dataSource={pastMeetings}
+                      rowKey="ProjectMeetingID"
+                      loading={isLoading}
+                      showSearch={false}
+                      onRefresh={() => refetch()}
+                    />
+                  ),
+                },
+              ]}
+            />
+          </Card>
+        </motion.div>
+      </motion.div>
 
       {/* Schedule/Edit Modal */}
       <FormModal
@@ -322,7 +435,7 @@ export default function FacultyMeetingsPage() {
           <Input placeholder="Meeting purpose" />
         </Form.Item>
         <Form.Item name="MeetingLocation" label="Location">
-          <Input placeholder="Meeting location" />
+          <Input placeholder="Meeting location" prefix={<EnvironmentOutlined />} />
         </Form.Item>
         <Form.Item name="MeetingNotes" label="Notes">
           <Input.TextArea rows={3} placeholder="Additional notes" />
@@ -340,7 +453,12 @@ export default function FacultyMeetingsPage() {
 
       {/* Attendance Modal */}
       <Modal
-        title={`Attendance - ${selectedMeeting?.ProjectGroup?.ProjectGroupName}`}
+        title={
+          <Space>
+            <TeamOutlined style={{ color: '#667eea' }} />
+            <span>Attendance - {selectedMeeting?.ProjectGroup?.ProjectGroupName}</span>
+          </Space>
+        }
         open={attendanceModal}
         onCancel={() => setAttendanceModal(false)}
         onOk={handleSaveAttendance}
@@ -360,6 +478,7 @@ export default function FacultyMeetingsPage() {
             {
               title: 'Present',
               key: 'present',
+              width: 80,
               render: (_, record, index) => (
                 <Checkbox
                   checked={record.IsPresent || false}
