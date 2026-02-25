@@ -10,6 +10,7 @@ const createStudentSchema = z.object({
     StudentName: z.string().min(1, 'Student name is required'),
     Phone: z.string().optional(),
     Email: z.string().email('Invalid email format'),
+    CGPA: z.number().min(0).max(10).optional().nullable(),
     Description: z.string().optional(),
 });
 
@@ -104,6 +105,7 @@ export async function POST(request: NextRequest) {
                 StudentName: validation.data.StudentName,
                 Phone: validation.data.Phone || null,
                 Email: validation.data.Email,
+                CGPA: validation.data.CGPA ?? null,
                 Description: validation.data.Description || null,
             },
         });

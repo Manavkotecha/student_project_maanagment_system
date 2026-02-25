@@ -171,10 +171,10 @@ export default function FacultyProjectsPage() {
 
                     {/* Description */}
                     {group.ProjectDescription && (
-                      <div style={{ 
-                        padding: '12px 16px', 
-                        background: '#f9fafb', 
-                        borderRadius: 8, 
+                      <div style={{
+                        padding: '12px 16px',
+                        background: '#f9fafb',
+                        borderRadius: 8,
                         marginBottom: 16,
                         fontSize: 13,
                         color: '#595959'
@@ -191,10 +191,10 @@ export default function FacultyProjectsPage() {
                       {(group.ProjectGroupMember || []).length === 0 ? (
                         <Text type="secondary" style={{ fontSize: 13 }}>No members assigned</Text>
                       ) : (
-                        <Avatar.Group maxCount={5} size={36}>
+                        <Avatar.Group max={{ count: 5 }} size={36}>
                           {(group.ProjectGroupMember || []).map((m) => (
-                            <Tooltip 
-                              key={m.StudentID} 
+                            <Tooltip
+                              key={m.StudentID}
                               title={
                                 <span>
                                   {m.Student?.StudentName}

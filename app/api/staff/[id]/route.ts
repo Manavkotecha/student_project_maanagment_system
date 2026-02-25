@@ -168,29 +168,27 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
             return errorResponse('Invalid staff ID', 400);
         }
 
-        // Check if staff is assigned to any projects or meetings
-        const assignmentsCount = await prisma.projectGroup.count({
-            where: {
-                OR: [
-                    { ConvenerStaffID: staffId },
-                    { ExpertStaffID: staffId },
-                ],
-            },
-        });
+        // Remove staff references and delete in a transaction
+        await prisma.$transaction(async (tx) => {
+            // Clear staff from project group assignments
+            await tx.projectGroup.updateMany({
+                where: { ConvenerStaffID: staffId },
+                data: { ConvenerStaffID: null },
+            });
+            await tx.projectGroup.updateMany({
+                where: { ExpertStaffID: staffId },
+                data: { ExpertStaffID: null },
+            });
 
-        const meetingsCount = await prisma.projectMeeting.count({
-            where: { GuideStaffID: staffId },
-        });
+            // Delete related meetings
+            await tx.projectMeeting.deleteMany({
+                where: { GuideStaffID: staffId },
+            });
 
-        if (assignmentsCount > 0 || meetingsCount > 0) {
-            return errorResponse(
-                `Cannot delete: Staff is assigned to ${assignmentsCount} project(s) and ${meetingsCount} meeting(s)`,
-                400
-            );
-        }
-
-        await prisma.staff.delete({
-            where: { StaffID: staffId },
+            // Delete the staff member
+            await tx.staff.delete({
+                where: { StaffID: staffId },
+            });
         });
 
         return successResponse(null, 'Staff member deleted successfully');

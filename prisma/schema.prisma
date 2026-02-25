@@ -150,6 +150,7 @@ model Student {
   StudentName              String                     @db.VarChar(255)
   Phone                    String?                    @db.VarChar(20)
   Email                    String?                    @unique @db.VarChar(255)
+  CGPA                     Decimal?                   @db.Decimal(4, 2)
   Description              String?
   Created                  DateTime?                  @default(now()) @db.Timestamptz(6)
   Modified                 DateTime?                  @default(now()) @db.Timestamptz(6)

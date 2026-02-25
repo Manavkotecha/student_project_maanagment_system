@@ -136,14 +136,16 @@ export default function StatCard({
                   prefix={prefix}
                   suffix={suffix}
                   loading={loading}
-                  valueStyle={{
-                    fontSize: 36,
-                    fontWeight: 800,
-                    fontFamily: "'Poppins', sans-serif",
-                    lineHeight: 1.1,
-                    background: 'linear-gradient(135deg, #1e293b 0%, #475569 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
+                  styles={{
+                    content: {
+                      fontSize: 36,
+                      fontWeight: 800,
+                      fontFamily: "'Poppins', sans-serif",
+                      lineHeight: 1.1,
+                      background: 'linear-gradient(135deg, #1e293b 0%, #475569 100%)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                    },
                   }}
                 />
               </div>

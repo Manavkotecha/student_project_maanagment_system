@@ -1,8 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, Form, Input, Button, Typography, Spin, Descriptions, Tag, Avatar, Row, Col, Space, Divider } from 'antd';
-import { UserOutlined, MailOutlined, PhoneOutlined, SaveOutlined, TeamOutlined, CalendarOutlined, IdcardOutlined } from '@ant-design/icons';
+import { UserOutlined, MailOutlined, PhoneOutlined, SaveOutlined, TeamOutlined, CalendarOutlined, IdcardOutlined, EditOutlined, CloseOutlined } from '@ant-design/icons';
 import { motion } from 'framer-motion';
 import AppLayout from '@/components/layout/AppLayout';
 import PageHeader from '@/components/ui/PageHeader';
@@ -34,6 +34,7 @@ const itemVariants = {
 
 export default function StudentProfilePage() {
   const [form] = Form.useForm<ProfileFormData>();
+  const [isEditing, setIsEditing] = useState(false);
   const { user } = useAuth();
   const { data: students, isLoading } = useStudents();
   const updateMutation = useUpdateStudent();
@@ -59,8 +60,21 @@ export default function StudentProfilePage() {
         id: currentStudent.StudentID,
         ...values,
       });
+      setIsEditing(false);
     } catch (error) {
       // Error handled by mutation
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    if (currentStudent) {
+      form.setFieldsValue({
+        StudentName: currentStudent.StudentName,
+        Email: currentStudent.Email || '',
+        Phone: currentStudent.Phone || '',
+        Description: currentStudent.Description || '',
+      });
     }
   };
 
@@ -106,18 +120,18 @@ export default function StudentProfilePage() {
           {/* Profile Card */}
           <Col xs={24} lg={8}>
             <motion.div variants={itemVariants}>
-              <Card 
-                style={{ 
-                  borderRadius: 16, 
+              <Card
+                style={{
+                  borderRadius: 16,
                   textAlign: 'center',
                   background: 'linear-gradient(180deg, #667eea 0%, #764ba2 100%)',
                   color: 'white',
                   border: 'none',
                 }}
               >
-                <Avatar 
+                <Avatar
                   size={100}
-                  style={{ 
+                  style={{
                     backgroundColor: 'white',
                     color: '#667eea',
                     fontSize: 36,
@@ -134,9 +148,9 @@ export default function StudentProfilePage() {
                 <Text style={{ color: 'rgba(255,255,255,0.8)' }}>
                   {currentStudent.Email}
                 </Text>
-                
+
                 <Divider style={{ borderColor: 'rgba(255,255,255,0.2)', margin: '24px 0' }} />
-                
+
                 <Row gutter={16}>
                   <Col span={8}>
                     <div>
@@ -188,102 +202,220 @@ export default function StudentProfilePage() {
           {/* Edit Form */}
           <Col xs={24} lg={16}>
             <motion.div variants={itemVariants}>
-              <Card 
+              <Card
                 title={
                   <Space>
                     <UserOutlined style={{ color: '#667eea' }} />
-                    <span>Edit Profile</span>
+                    <span>{isEditing ? 'Edit Profile' : 'Profile Details'}</span>
                   </Space>
+                }
+                extra={
+                  !isEditing && (
+                    <Button
+                      type="primary"
+                      icon={<EditOutlined />}
+                      onClick={() => setIsEditing(true)}
+                      style={{
+                        borderRadius: 8,
+                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                        border: 'none',
+                      }}
+                    >
+                      Edit Data
+                    </Button>
+                  )
                 }
                 style={{ borderRadius: 16 }}
               >
-                <Form
-                  form={form}
-                  layout="vertical"
-                  onFinish={handleSubmit}
-                  size="large"
-                >
-                  <Row gutter={16}>
-                    <Col xs={24} md={12}>
-                      <Form.Item
-                        name="StudentName"
-                        label={<span style={{ fontWeight: 500 }}>Full Name</span>}
-                        rules={[{ required: true, message: 'Please enter your name' }]}
-                      >
-                        <Input 
-                          prefix={<UserOutlined style={{ color: '#8c8c8c' }} />} 
-                          placeholder="Your full name" 
-                          style={{ borderRadius: 8 }}
-                        />
-                      </Form.Item>
-                    </Col>
-                    <Col xs={24} md={12}>
-                      <Form.Item
-                        name="Email"
-                        label={<span style={{ fontWeight: 500 }}>Email Address</span>}
-                        rules={[
-                          { required: true, message: 'Please enter your email' },
-                          { type: 'email', message: 'Please enter a valid email' },
-                        ]}
-                      >
-                        <Input 
-                          prefix={<MailOutlined style={{ color: '#8c8c8c' }} />} 
-                          placeholder="your.email@example.com" 
-                          style={{ borderRadius: 8 }}
-                        />
-                      </Form.Item>
-                    </Col>
-                  </Row>
-
-                  <Form.Item 
-                    name="Phone" 
-                    label={<span style={{ fontWeight: 500 }}>Phone Number</span>}
+                {/* Always render Form so useForm stays connected */}
+                <div style={{ display: isEditing ? 'block' : 'none' }}>
+                  <Form
+                    form={form}
+                    layout="vertical"
+                    onFinish={handleSubmit}
+                    size="large"
                   >
-                    <Input 
-                      prefix={<PhoneOutlined style={{ color: '#8c8c8c' }} />} 
-                      placeholder="Your phone number" 
-                      style={{ borderRadius: 8 }}
-                    />
-                  </Form.Item>
+                    <Row gutter={16}>
+                      <Col xs={24} md={12}>
+                        <Form.Item
+                          name="StudentName"
+                          label={<span style={{ fontWeight: 500 }}>Full Name</span>}
+                          rules={[{ required: true, message: 'Please enter your name' }]}
+                        >
+                          <Input
+                            prefix={<UserOutlined style={{ color: '#8c8c8c' }} />}
+                            placeholder="Your full name"
+                            style={{ borderRadius: 8 }}
+                          />
+                        </Form.Item>
+                      </Col>
+                      <Col xs={24} md={12}>
+                        <Form.Item
+                          name="Email"
+                          label={<span style={{ fontWeight: 500 }}>Email Address</span>}
+                          rules={[
+                            { required: true, message: 'Please enter your email' },
+                            { type: 'email', message: 'Please enter a valid email' },
+                          ]}
+                        >
+                          <Input
+                            prefix={<MailOutlined style={{ color: '#8c8c8c' }} />}
+                            placeholder="your.email@example.com"
+                            style={{ borderRadius: 8 }}
+                          />
+                        </Form.Item>
+                      </Col>
+                    </Row>
 
-                  <Form.Item 
-                    name="Description" 
-                    label={<span style={{ fontWeight: 500 }}>About Me</span>}
-                  >
-                    <Input.TextArea 
-                      rows={4} 
-                      placeholder="Tell us about yourself, your interests, skills..." 
-                      style={{ borderRadius: 8 }}
-                    />
-                  </Form.Item>
+                    <Form.Item
+                      name="Phone"
+                      label={<span style={{ fontWeight: 500 }}>Phone Number</span>}
+                    >
+                      <Input
+                        prefix={<PhoneOutlined style={{ color: '#8c8c8c' }} />}
+                        placeholder="Your phone number"
+                        style={{ borderRadius: 8 }}
+                      />
+                    </Form.Item>
 
-                  <Form.Item style={{ marginBottom: 0 }}>
-                    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                      <Button
-                        type="primary"
-                        htmlType="submit"
-                        icon={<SaveOutlined />}
-                        loading={updateMutation.isPending}
-                        size="large"
-                        style={{
-                          borderRadius: 8,
-                          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                          border: 'none',
-                          boxShadow: '0 4px 12px rgba(102, 126, 234, 0.4)',
-                        }}
-                      >
-                        Save Changes
-                      </Button>
-                    </motion.div>
-                  </Form.Item>
-                </Form>
+                    <Form.Item
+                      name="Description"
+                      label={<span style={{ fontWeight: 500 }}>About Me</span>}
+                    >
+                      <Input.TextArea
+                        autoSize={{ minRows: 4, maxRows: 10 }}
+                        maxLength={500}
+                        showCount
+                        placeholder="Tell us about yourself, your interests, skills..."
+                        style={{ borderRadius: 8, whiteSpace: 'pre-wrap' }}
+                      />
+                    </Form.Item>
+
+                    <Form.Item style={{ marginBottom: 0 }}>
+                      <Space>
+                        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                          <Button
+                            type="primary"
+                            htmlType="submit"
+                            icon={<SaveOutlined />}
+                            loading={updateMutation.isPending}
+                            size="large"
+                            style={{
+                              borderRadius: 8,
+                              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                              border: 'none',
+                              boxShadow: '0 4px 12px rgba(102, 126, 234, 0.4)',
+                            }}
+                          >
+                            Save Changes
+                          </Button>
+                        </motion.div>
+                        <Button
+                          icon={<CloseOutlined />}
+                          onClick={handleCancelEdit}
+                          size="large"
+                          style={{ borderRadius: 8 }}
+                        >
+                          Cancel
+                        </Button>
+                      </Space>
+                    </Form.Item>
+                  </Form>
+                </div>
+
+                {!isEditing && (
+                  <div>
+                    <Row gutter={16} style={{ marginBottom: 20 }}>
+                      <Col xs={24} md={12}>
+                        <div style={{ marginBottom: 16 }}>
+                          <Text type="secondary" style={{ fontSize: 13, fontWeight: 500, display: 'block', marginBottom: 6 }}>
+                            <span style={{ color: '#ff4d4f' }}>* </span>Full Name
+                          </Text>
+                          <div style={{
+                            padding: '8px 12px',
+                            borderRadius: 8,
+                            border: '1px solid #d9d9d9',
+                            background: '#fafafa',
+                            fontSize: 15,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 8,
+                            minHeight: 40,
+                          }}>
+                            <UserOutlined style={{ color: '#8c8c8c' }} />
+                            {currentStudent.StudentName}
+                          </div>
+                        </div>
+                      </Col>
+                      <Col xs={24} md={12}>
+                        <div style={{ marginBottom: 16 }}>
+                          <Text type="secondary" style={{ fontSize: 13, fontWeight: 500, display: 'block', marginBottom: 6 }}>
+                            <span style={{ color: '#ff4d4f' }}>* </span>Email Address
+                          </Text>
+                          <div style={{
+                            padding: '8px 12px',
+                            borderRadius: 8,
+                            border: '1px solid #d9d9d9',
+                            background: '#fafafa',
+                            fontSize: 15,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 8,
+                            minHeight: 40,
+                          }}>
+                            <MailOutlined style={{ color: '#8c8c8c' }} />
+                            {currentStudent.Email}
+                          </div>
+                        </div>
+                      </Col>
+                    </Row>
+
+                    <div style={{ marginBottom: 20 }}>
+                      <Text type="secondary" style={{ fontSize: 13, fontWeight: 500, display: 'block', marginBottom: 6 }}>
+                        Phone Number
+                      </Text>
+                      <div style={{
+                        padding: '8px 12px',
+                        borderRadius: 8,
+                        border: '1px solid #d9d9d9',
+                        background: '#fafafa',
+                        fontSize: 15,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        minHeight: 40,
+                      }}>
+                        <PhoneOutlined style={{ color: '#8c8c8c' }} />
+                        {currentStudent.Phone || '—'}
+                      </div>
+                    </div>
+
+                    <div>
+                      <Text type="secondary" style={{ fontSize: 13, fontWeight: 500, display: 'block', marginBottom: 6 }}>
+                        About Me
+                      </Text>
+                      <div style={{
+                        padding: '12px',
+                        borderRadius: 8,
+                        border: '1px solid #d9d9d9',
+                        background: '#fafafa',
+                        fontSize: 15,
+                        minHeight: 100,
+                        whiteSpace: 'pre-wrap',
+                        lineHeight: 1.6,
+                      }}>
+                        {currentStudent.Description || '—'}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </Card>
             </motion.div>
 
             {/* My Groups */}
             {currentStudent.ProjectGroupMember && currentStudent.ProjectGroupMember.length > 0 && (
               <motion.div variants={itemVariants}>
-                <Card 
+                <Card
                   title={
                     <Space>
                       <TeamOutlined style={{ color: '#667eea' }} />
@@ -294,12 +426,12 @@ export default function StudentProfilePage() {
                 >
                   <Space wrap>
                     {currentStudent.ProjectGroupMember.map((membership) => (
-                      <Tag 
+                      <Tag
                         key={membership.ProjectGroup.ProjectGroupID}
                         color="blue"
-                        style={{ 
-                          padding: '8px 16px', 
-                          fontSize: 14, 
+                        style={{
+                          padding: '8px 16px',
+                          fontSize: 14,
                           borderRadius: 12,
                         }}
                       >

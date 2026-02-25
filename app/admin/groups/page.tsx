@@ -13,7 +13,6 @@ import {
   Drawer,
   Flex,
   Avatar,
-  InputNumber,
   Divider,
   App,
   Row,
@@ -76,7 +75,7 @@ export default function GroupsPage() {
   const { data: groups, isLoading, refetch } = useGroups({ search: searchQuery });
   const { data: projectTypes } = useProjectTypes();
   const { data: staff } = useStaff();
-  const { data: availableStudents } = useStudents('', true);
+  const { data: availableStudents, refetch: refetchAvailable } = useStudents('', true);
   const createMutation = useCreateGroup();
   const updateMutation = useUpdateGroup();
   const deleteMutation = useDeleteGroup();
@@ -155,15 +154,19 @@ export default function GroupsPage() {
     try {
       const values = await memberForm.validateFields();
       if (selectedGroup) {
+        const student = availableStudents?.find((s) => s.StudentID === values.studentId);
         await memberMutation.mutateAsync({
           groupId: selectedGroup.ProjectGroupID,
           action: 'add',
           studentId: values.studentId,
-          cgpa: values.cgpa,
+          cgpa: student?.CGPA ? Number(student.CGPA) : undefined,
         });
         message.success('Member added to group successfully');
         memberForm.resetFields();
-        refetch();
+        const { data } = await refetch();
+        const updated = data?.find((g: ProjectGroup) => g.ProjectGroupID === selectedGroup.ProjectGroupID);
+        if (updated) setSelectedGroup(updated);
+        refetchAvailable();
       }
     } catch (error) {
       if ((error as Error).message) {
@@ -181,7 +184,10 @@ export default function GroupsPage() {
           studentId,
         });
         message.success('Member removed from group successfully');
-        refetch();
+        const { data } = await refetch();
+        const updated = data?.find((g: ProjectGroup) => g.ProjectGroupID === selectedGroup.ProjectGroupID);
+        if (updated) setSelectedGroup(updated);
+        refetchAvailable();
       } catch (error) {
         message.error((error as Error).message || 'Failed to remove member');
       }
@@ -197,7 +203,9 @@ export default function GroupsPage() {
           studentId,
         });
         message.success('Member set as leader of group successfully');
-        refetch();
+        const { data } = await refetch();
+        const updated = data?.find((g: ProjectGroup) => g.ProjectGroupID === selectedGroup.ProjectGroupID);
+        if (updated) setSelectedGroup(updated);
       } catch (error) {
         message.error((error as Error).message || 'Failed to set leader');
       }
@@ -438,39 +446,38 @@ export default function GroupsPage() {
       >
         {selectedGroup && (
           <>
-            <Card 
-              size="small" 
-              style={{ 
-                marginBottom: 16, 
+            <Card
+              size="small"
+              style={{
+                marginBottom: 16,
                 background: 'linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%)',
                 border: 'none'
               }}
             >
-              <Form form={memberForm} layout="inline">
-                <Form.Item
-                  name="studentId"
-                  rules={[{ required: true, message: 'Select student' }]}
-                  style={{ flex: 1 }}
-                >
-                  <Select placeholder="Select student" showSearch optionFilterProp="children">
-                    {availableStudents?.map((s) => (
-                      <Select.Option key={s.StudentID} value={s.StudentID}>
-                        {s.StudentName}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-                <Form.Item name="cgpa">
-                  <InputNumber placeholder="CGPA" min={0} max={10} step={0.01} />
-                </Form.Item>
-                <Button
-                  type="primary"
-                  icon={<UserAddOutlined />}
-                  onClick={handleAddMember}
-                  loading={memberMutation.isPending}
-                >
-                  Add
-                </Button>
+              <Form form={memberForm}>
+                <Flex gap={12} align="flex-start">
+                  <Form.Item
+                    name="studentId"
+                    rules={[{ required: true, message: 'Select student' }]}
+                    style={{ flex: 1, marginBottom: 0 }}
+                  >
+                    <Select placeholder="Select student" showSearch optionFilterProp="children">
+                      {availableStudents?.map((s) => (
+                        <Select.Option key={s.StudentID} value={s.StudentID}>
+                          {s.StudentName}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                  <Button
+                    type="primary"
+                    icon={<UserAddOutlined />}
+                    onClick={handleAddMember}
+                    loading={memberMutation.isPending}
+                  >
+                    Add
+                  </Button>
+                </Flex>
               </Form>
             </Card>
 
@@ -494,11 +501,11 @@ export default function GroupsPage() {
                     >
                       <Flex justify="space-between" align="flex-start" gap="middle">
                         <Flex gap="middle" align="flex-start" style={{ flex: 1, minWidth: 0 }}>
-                          <Avatar 
+                          <Avatar
                             size={48}
-                            style={{ 
+                            style={{
                               backgroundColor: item.IsGroupLeader ? '#faad14' : '#667eea',
-                              flexShrink: 0 
+                              flexShrink: 0
                             }}
                           >
                             {getInitials(item.Student?.StudentName)}
@@ -512,8 +519,8 @@ export default function GroupsPage() {
                                 <Tag color="gold" icon={<CrownOutlined />}>Leader</Tag>
                               )}
                             </Flex>
-                            <span 
-                              style={{ 
+                            <span
+                              style={{
                                 fontSize: '13px',
                                 color: '#8c8c8c',
                                 overflow: 'hidden',

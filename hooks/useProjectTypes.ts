@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { message } from 'antd';
+import { App } from 'antd';
 import type { ProjectType, CreateProjectTypeInput } from '@/app/types';
 
 const QUERY_KEY = 'projectTypes';
@@ -65,6 +65,7 @@ export function useProjectType(id: number) {
 
 export function useCreateProjectType() {
     const queryClient = useQueryClient();
+    const { message } = App.useApp();
 
     return useMutation({
         mutationFn: createProjectType,
@@ -80,6 +81,7 @@ export function useCreateProjectType() {
 
 export function useUpdateProjectType() {
     const queryClient = useQueryClient();
+    const { message } = App.useApp();
 
     return useMutation({
         mutationFn: updateProjectType,
@@ -95,6 +97,7 @@ export function useUpdateProjectType() {
 
 export function useDeleteProjectType() {
     const queryClient = useQueryClient();
+    const { message } = App.useApp();
 
     return useMutation({
         mutationFn: deleteProjectType,

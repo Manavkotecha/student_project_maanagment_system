@@ -10,6 +10,7 @@ const updateStudentSchema = z.object({
     StudentName: z.string().min(1).optional(),
     Phone: z.string().optional().nullable(),
     Email: z.string().email().optional(),
+    CGPA: z.number().min(0).max(10).optional().nullable(),
     Description: z.string().optional().nullable(),
 });
 
@@ -124,6 +125,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
         if (validation.data.StudentName) updateData.StudentName = validation.data.StudentName;
         if (validation.data.Phone !== undefined) updateData.Phone = validation.data.Phone;
         if (validation.data.Email) updateData.Email = validation.data.Email;
+        if (validation.data.CGPA !== undefined) updateData.CGPA = validation.data.CGPA;
         if (validation.data.Description !== undefined) updateData.Description = validation.data.Description;
 
         const student = await prisma.student.update({

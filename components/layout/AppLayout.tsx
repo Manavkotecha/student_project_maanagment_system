@@ -296,7 +296,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
             menu={{ items: userMenuItems }}
             placement="bottomRight"
             trigger={['click']}
-            overlayStyle={{ minWidth: 200 }}
+            styles={{ root: { minWidth: 200 } }}
           >
             <Button
               type="text"

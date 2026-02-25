@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { Card, Typography, Tag, Descriptions, List, Avatar, Empty, Spin, Row, Col, Space } from 'antd';
+import { Card, Typography, Tag, Descriptions, Avatar, Empty, Spin, Row, Col, Space } from 'antd';
 import { TeamOutlined, CrownOutlined, FolderOutlined, CalendarOutlined, ProjectOutlined } from '@ant-design/icons';
 import { motion } from 'framer-motion';
 import AppLayout from '@/components/layout/AppLayout';
@@ -120,39 +120,39 @@ export default function StudentGroupsPage() {
               transition={{ delay: index * 0.1 }}
               style={{ marginBottom: 16 }}
             >
-            <Card
-              style={{
-                borderRadius: 20,
-                border: 'none',
-                overflow: 'hidden',
-                boxShadow: '0 10px 40px -10px rgba(0, 0, 0, 0.12)',
-              }}
-              styles={{
-                header: {
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
-                  borderBottom: 'none',
-                  padding: '20px 24px',
+              <Card
+                style={{
+                  borderRadius: 20,
+                  border: 'none',
+                  overflow: 'hidden',
+                  boxShadow: '0 10px 40px -10px rgba(0, 0, 0, 0.12)',
+                }}
+                styles={{
+                  header: {
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+                    borderBottom: 'none',
+                    padding: '20px 24px',
+                  }
+                }}
+                title={
+                  <Space>
+                    <FolderOutlined style={{ color: 'white', fontSize: 18 }} />
+                    <span style={{ color: 'white', fontWeight: 700, fontSize: 16 }}>{group.ProjectGroupName}</span>
+                    <Tag
+                      style={{
+                        color: 'white',
+                        border: '1px solid rgba(255,255,255,0.3)',
+                        background: 'rgba(255,255,255,0.15)',
+                        backdropFilter: 'blur(10px)',
+                        borderRadius: 20,
+                        fontWeight: 500,
+                      }}
+                    >
+                      {group.ProjectType?.ProjectTypeName}
+                    </Tag>
+                  </Space>
                 }
-              }}
-              title={
-                <Space>
-                  <FolderOutlined style={{ color: 'white', fontSize: 18 }} />
-                  <span style={{ color: 'white', fontWeight: 700, fontSize: 16 }}>{group.ProjectGroupName}</span>
-                  <Tag 
-                    style={{ 
-                      color: 'white', 
-                      border: '1px solid rgba(255,255,255,0.3)',
-                      background: 'rgba(255,255,255,0.15)',
-                      backdropFilter: 'blur(10px)',
-                      borderRadius: 20,
-                      fontWeight: 500,
-                    }}
-                  >
-                    {group.ProjectType?.ProjectTypeName}
-                  </Tag>
-                </Space>
-              }
-            >
+              >
                 <Descriptions column={{ xs: 1, sm: 2, lg: 3 }} size="small">
                   <Descriptions.Item label="Project Title" span={3}>
                     <Text strong>{group.ProjectTitle}</Text>
@@ -181,9 +181,9 @@ export default function StudentGroupsPage() {
                   </Descriptions.Item>
                   {group.ProjectDescription && (
                     <Descriptions.Item label="Description" span={3}>
-                      <div style={{ 
-                        padding: '8px 12px', 
-                        background: '#f9fafb', 
+                      <div style={{
+                        padding: '8px 12px',
+                        background: '#f9fafb',
                         borderRadius: 8,
                         fontSize: 13,
                         color: '#595959'
@@ -200,21 +200,19 @@ export default function StudentGroupsPage() {
                 <Title level={5} style={{ marginTop: 20, marginBottom: 12 }}>
                   Team Members ({group.ProjectGroupMember?.length || 0})
                 </Title>
-                <List
-                  grid={{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 4 }}
-                  dataSource={group.ProjectGroupMember || []}
-                  renderItem={(member) => (
-                    <List.Item>
-                      <Card 
-                        size="small" 
+                <Row gutter={[16, 16]}>
+                  {(group.ProjectGroupMember || []).map((member) => (
+                    <Col key={member.Student?.StudentID || member.StudentID} xs={24} sm={12} md={8} lg={6}>
+                      <Card
+                        size="small"
                         hoverable
                         style={{
                           borderRadius: 16,
                           border: 'none',
-                          boxShadow: member.IsGroupLeader 
-                            ? '0 4px 20px -5px rgba(250, 173, 20, 0.4)' 
+                          boxShadow: member.IsGroupLeader
+                            ? '0 4px 20px -5px rgba(250, 173, 20, 0.4)'
                             : '0 4px 20px -5px rgba(102, 126, 234, 0.2)',
-                          background: member.IsGroupLeader 
+                          background: member.IsGroupLeader
                             ? 'linear-gradient(135deg, rgba(250, 173, 20, 0.08) 0%, rgba(255, 255, 255, 1) 100%)'
                             : 'linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(255, 255, 255, 1) 100%)',
                           transition: 'all 0.3s ease',
@@ -225,7 +223,7 @@ export default function StudentGroupsPage() {
                             <Avatar
                               size={48}
                               style={{
-                                background: member.IsGroupLeader 
+                                background: member.IsGroupLeader
                                   ? 'linear-gradient(135deg, #faad14 0%, #fa8c16 100%)'
                                   : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                                 boxShadow: member.IsGroupLeader
@@ -251,11 +249,11 @@ export default function StudentGroupsPage() {
                                 {member.Student?.Email}
                               </Text>
                               {member.StudentCGPA && (
-                                <Tag 
-                                  color="blue" 
-                                  style={{ 
-                                    marginTop: 6, 
-                                    borderRadius: 20, 
+                                <Tag
+                                  color="blue"
+                                  style={{
+                                    marginTop: 6,
+                                    borderRadius: 20,
                                     fontSize: 11,
                                     fontWeight: 600,
                                     border: 'none',
@@ -270,9 +268,9 @@ export default function StudentGroupsPage() {
                           }
                         />
                       </Card>
-                    </List.Item>
-                  )}
-                />
+                    </Col>
+                  ))}
+                </Row>
               </Card>
             </motion.div>
           ))

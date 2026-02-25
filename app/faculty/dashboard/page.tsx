@@ -248,7 +248,7 @@ export default function FacultyDashboard() {
                       {/* Separator + Team Members */}
                       <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 12 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <Avatar.Group maxCount={3} size="small">
+                          <Avatar.Group max={{ count: 3 }} size="small">
                             {group.ProjectGroupMember?.map((member: { ProjectGroupMemberID: number; Student?: { StudentName?: string } }) => (
                               <Avatar
                                 key={member.ProjectGroupMemberID}

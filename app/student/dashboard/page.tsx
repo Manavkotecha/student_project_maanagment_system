@@ -34,7 +34,6 @@ export default function StudentDashboard() {
 
   const { data: meetings, isLoading } = useMeetings();
 
-  // Filter meetings for groups this student belongs to
   const myGroupIds = currentStudent?.ProjectGroupMember?.map((m: { ProjectGroup: { ProjectGroupID: number } }) => m.ProjectGroup.ProjectGroupID) || [];
 
   const myMeetings = meetings?.filter(
@@ -130,7 +129,7 @@ export default function StudentDashboard() {
                   percent={attendanceRate}
                   size={64}
                   strokeColor={attendanceRate >= 75 ? '#10b981' : '#ef4444'}
-                  trailColor="#e2e8f0"
+                  railColor="#e2e8f0"
                   format={(percent) => (
                     <span className={`text-lg font-bold ${attendanceRate >= 75 ? 'text-emerald-600' : 'text-red-500'}`}>
                       {percent}%
@@ -150,7 +149,6 @@ export default function StudentDashboard() {
         </Col>
       </Row>
 
-      {/* Main Content */}
       <Row gutter={[28, 28]}>
         {/* My Groups */}
         <Col xs={24} lg={12}>
@@ -180,15 +178,15 @@ export default function StudentDashboard() {
                 />
               ) : (
                 <div className="space-y-4">
-                  {currentStudent.ProjectGroupMember.map((membership: { 
-                    ProjectGroup: { 
-                      ProjectGroupID: number; 
-                      ProjectGroupName: string; 
+                  {currentStudent.ProjectGroupMember.map((membership: {
+                    ProjectGroup: {
+                      ProjectGroupID: number;
+                      ProjectGroupName: string;
                       ProjectTitle: string;
                       ProjectType?: { ProjectTypeName: string };
                       ProjectGroupMember?: Array<{ Student?: { StudentName?: string } }>;
-                    }; 
-                    IsGroupLeader?: boolean 
+                    };
+                    IsGroupLeader?: boolean
                   }, index: number) => (
                     <motion.div
                       key={membership.ProjectGroup.ProjectGroupID}
@@ -230,7 +228,7 @@ export default function StudentDashboard() {
                       {/* Separator */}
                       <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 12 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <Avatar.Group maxCount={4} size="small">
+                          <Avatar.Group max={{ count: 4 }} size="small">
                             {membership.ProjectGroup.ProjectGroupMember?.map((member, idx) => (
                               <Avatar
                                 key={idx}
@@ -338,12 +336,12 @@ export default function StudentDashboard() {
         >
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             <Link href="/student/groups">
-              <div 
+              <div
                 className="p-6 rounded-2xl bg-gradient-to-br from-indigo-50 to-indigo-100 hover:from-indigo-100 hover:to-indigo-200 transition-all cursor-pointer group"
                 style={{ boxShadow: '0 4px 15px -3px rgba(99, 102, 241, 0.2)' }}
               >
                 <div className="flex flex-col items-center text-center">
-                  <div 
+                  <div
                     className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg"
                     style={{ boxShadow: '0 8px 20px -5px rgba(99, 102, 241, 0.5)' }}
                   >
@@ -355,12 +353,12 @@ export default function StudentDashboard() {
               </div>
             </Link>
             <Link href="/student/meetings">
-              <div 
+              <div
                 className="p-6 rounded-2xl bg-gradient-to-br from-orange-50 to-orange-100 hover:from-orange-100 hover:to-orange-200 transition-all cursor-pointer group"
                 style={{ boxShadow: '0 4px 15px -3px rgba(249, 115, 22, 0.2)' }}
               >
                 <div className="flex flex-col items-center text-center">
-                  <div 
+                  <div
                     className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg"
                     style={{ boxShadow: '0 8px 20px -5px rgba(249, 115, 22, 0.5)' }}
                   >
@@ -372,12 +370,12 @@ export default function StudentDashboard() {
               </div>
             </Link>
             <Link href="/student/profile">
-              <div 
+              <div
                 className="p-6 rounded-2xl bg-gradient-to-br from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 transition-all cursor-pointer group"
                 style={{ boxShadow: '0 4px 15px -3px rgba(168, 85, 247, 0.2)' }}
               >
                 <div className="flex flex-col items-center text-center">
-                  <div 
+                  <div
                     className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg"
                     style={{ boxShadow: '0 8px 20px -5px rgba(168, 85, 247, 0.5)' }}
                   >
@@ -388,12 +386,12 @@ export default function StudentDashboard() {
                 </div>
               </div>
             </Link>
-            <div 
+            <div
               className="p-6 rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100 hover:from-emerald-100 hover:to-emerald-200 transition-all cursor-pointer group"
               style={{ boxShadow: '0 4px 15px -3px rgba(16, 185, 129, 0.2)' }}
             >
               <div className="flex flex-col items-center text-center">
-                <div 
+                <div
                   className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg"
                   style={{ boxShadow: '0 8px 20px -5px rgba(16, 185, 129, 0.5)' }}
                 >

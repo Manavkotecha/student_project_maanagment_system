@@ -173,37 +173,30 @@ export default function StaffPage() {
       title: 'Actions',
       key: 'actions',
       width: 120,
-      render: (_, record) => {
-        const hasAssignments =
-          (record._count?.ProjectGroup_ProjectGroup_ConvenerStaffIDToStaff || 0) > 0 ||
-          (record._count?.ProjectMeeting || 0) > 0;
-
-        return (
-          <Space size="small">
+      render: (_, record) => (
+        <Space size="small">
+          <Button
+            type="text"
+            icon={<EditOutlined />}
+            onClick={() => handleEdit(record)}
+            style={{ color: '#667eea' }}
+          />
+          <Popconfirm
+            title="Delete staff member?"
+            description="This will also remove related assignments."
+            onConfirm={() => handleDelete(record.StaffID)}
+            okText="Delete"
+            cancelText="Cancel"
+            okButtonProps={{ danger: true }}
+          >
             <Button
               type="text"
-              icon={<EditOutlined />}
-              onClick={() => handleEdit(record)}
-              style={{ color: '#667eea' }}
+              danger
+              icon={<DeleteOutlined />}
             />
-            <Popconfirm
-              title="Delete staff member?"
-              description="This action cannot be undone."
-              onConfirm={() => handleDelete(record.StaffID)}
-              okText="Delete"
-              cancelText="Cancel"
-              okButtonProps={{ danger: true }}
-            >
-              <Button
-                type="text"
-                danger
-                icon={<DeleteOutlined />}
-                disabled={hasAssignments}
-              />
-            </Popconfirm>
-          </Space>
-        );
-      },
+          </Popconfirm>
+        </Space>
+      ),
     },
   ];
 
@@ -299,7 +292,7 @@ export default function StaffPage() {
           <Input placeholder="email@example.com" />
         </Form.Item>
         <Form.Item name="Phone" label="Phone">
-          <Input placeholder="Phone number" />
+          <Input placeholder="Phone number" maxLength={10} />
         </Form.Item>
         <Form.Item
           name="Password"

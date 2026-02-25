@@ -28,6 +28,7 @@ export interface Student {
     StudentName: string;
     Phone?: string | null;
     Email?: string | null;
+    CGPA?: DecimalValue;
     Description?: string | null;
     Created?: Date | null;
     Modified?: Date | null;
@@ -162,6 +163,7 @@ export interface CreateStudentInput {
     StudentName: string;
     Phone?: string;
     Email: string;
+    CGPA?: number;
     Description?: string;
 }
 
