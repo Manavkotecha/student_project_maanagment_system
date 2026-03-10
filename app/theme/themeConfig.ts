@@ -2,17 +2,17 @@ import type { ThemeConfig } from 'antd';
 
 const theme: ThemeConfig = {
     token: {
-        // Primary colors - Modern Indigo/Purple
-        colorPrimary: '#6366f1',
+        // Primary colors – Blue/White palette
+        colorPrimary: '#007BFF',
         colorSuccess: '#10b981',
         colorWarning: '#f59e0b',
         colorError: '#ef4444',
-        colorInfo: '#06b6d4',
-        
+        colorInfo: '#339CFF',
+
         // Link colors
-        colorLink: '#6366f1',
-        colorLinkHover: '#4f46e5',
-        colorLinkActive: '#4338ca',
+        colorLink: '#007BFF',
+        colorLinkHover: '#0056b3',
+        colorLinkActive: '#004299',
 
         // Typography
         fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
@@ -20,38 +20,38 @@ const theme: ThemeConfig = {
         fontSizeHeading1: 38,
         fontSizeHeading2: 30,
         fontSizeHeading3: 24,
-        fontWeightStrong: 600,
+        fontWeightStrong: 700,
 
-        // Border radius - More rounded for modern look
+        // Border radius
         borderRadius: 10,
         borderRadiusLG: 14,
         borderRadiusSM: 8,
         borderRadiusXS: 6,
 
-        // Shadows - Enhanced depth
-        boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
-        boxShadowSecondary: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+        // Shadows
+        boxShadow: '0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px -1px rgba(0,0,0,0.1)',
+        boxShadowSecondary: '0 4px 6px rgba(0,0,0,0.1)',
 
         // Layout colors
-        colorBgLayout: '#f8fafc',
+        colorBgLayout: '#F8FAFC',
         colorBgContainer: '#ffffff',
         colorBgElevated: '#ffffff',
-        colorBorder: '#e2e8f0',
-        colorBorderSecondary: '#f1f5f9',
-        
+        colorBorder: '#E2E8F0',
+        colorBorderSecondary: '#F1F5F9',
+
         // Text colors
-        colorText: '#0f172a',
-        colorTextSecondary: '#64748b',
-        colorTextTertiary: '#94a3b8',
-        colorTextQuaternary: '#cbd5e1',
-        
+        colorText: '#001F3F',
+        colorTextSecondary: '#6B7280',
+        colorTextTertiary: '#9CA3AF',
+        colorTextQuaternary: '#D1D5DB',
+
         // Motion
         motionDurationFast: '0.1s',
         motionDurationMid: '0.2s',
         motionDurationSlow: '0.3s',
         motionEaseInOut: 'cubic-bezier(0.4, 0, 0.2, 1)',
         motionEaseOut: 'cubic-bezier(0, 0, 0.2, 1)',
-        
+
         // Spacing
         padding: 16,
         paddingLG: 24,
@@ -61,7 +61,7 @@ const theme: ThemeConfig = {
         marginLG: 24,
         marginSM: 12,
         marginXS: 8,
-        
+
         // Control heights
         controlHeight: 40,
         controlHeightLG: 48,
@@ -69,10 +69,10 @@ const theme: ThemeConfig = {
     },
     components: {
         Layout: {
-            siderBg: 'linear-gradient(180deg, #4338ca 0%, #312e81 100%)',
+            siderBg: 'linear-gradient(180deg, #004080 0%, #001F3F 100%)',
             headerBg: '#ffffff',
             headerPadding: '0 24px',
-            bodyBg: '#f8fafc',
+            bodyBg: '#F8FAFC',
             triggerBg: 'rgba(255,255,255,0.1)',
             triggerColor: '#ffffff',
         },
@@ -95,36 +95,36 @@ const theme: ThemeConfig = {
             borderRadiusLG: 16,
         },
         Table: {
-            headerBg: '#f8fafc',
-            headerColor: '#475569',
-            headerSortActiveBg: '#f1f5f9',
-            headerSortHoverBg: '#e2e8f0',
-            rowHoverBg: '#f0f4ff',
-            borderColor: '#e2e8f0',
+            headerBg: '#F8FAFC',
+            headerColor: '#6B7280',
+            headerSortActiveBg: '#EFF6FF',
+            headerSortHoverBg: '#DBEAFE',
+            rowHoverBg: '#EFF6FF',
+            borderColor: '#E2E8F0',
             headerBorderRadius: 12,
             cellPaddingBlock: 16,
             cellPaddingInline: 16,
         },
         Button: {
-            primaryShadow: '0 4px 14px 0 rgba(99, 102, 241, 0.4)',
-            defaultShadow: '0 2px 4px 0 rgba(0, 0, 0, 0.05)',
-            colorPrimaryHover: '#4f46e5',
+            primaryShadow: '0 4px 14px 0 rgba(0,123,255,0.35)',
+            defaultShadow: '0 2px 4px 0 rgba(0,0,0,0.05)',
+            colorPrimaryHover: '#0056b3',
             controlHeight: 40,
             controlHeightLG: 48,
             controlHeightSM: 32,
             paddingContentHorizontal: 20,
-            fontWeight: 500,
+            fontWeight: 600,
         },
         Input: {
-            activeBorderColor: '#6366f1',
-            hoverBorderColor: '#a5b4fc',
-            activeShadow: '0 0 0 3px rgba(99, 102, 241, 0.1)',
+            activeBorderColor: '#007BFF',
+            hoverBorderColor: '#60A5FA',
+            activeShadow: '0 0 0 3px rgba(0,123,255,0.1)',
             paddingBlock: 10,
             paddingInline: 14,
         },
         Select: {
-            optionSelectedBg: '#eef2ff',
-            optionActiveBg: '#f0f4ff',
+            optionSelectedBg: '#EFF6FF',
+            optionActiveBg: '#DBEAFE',
         },
         Modal: {
             headerBg: '#ffffff',
@@ -135,11 +135,11 @@ const theme: ThemeConfig = {
         Dropdown: {
             paddingBlock: 8,
             borderRadiusLG: 12,
-            controlItemBgHover: '#f0f4ff',
+            controlItemBgHover: '#EFF6FF',
         },
         Tag: {
-            defaultBg: '#f1f5f9',
-            defaultColor: '#475569',
+            defaultBg: '#EFF6FF',
+            defaultColor: '#007BFF',
         },
         Statistic: {
             titleFontSize: 14,
@@ -150,48 +150,40 @@ const theme: ThemeConfig = {
             containerSizeLG: 48,
             containerSizeSM: 32,
         },
-        Badge: {
-            dotSize: 8,
-        },
+        Badge: { dotSize: 8 },
         Spin: {
             dotSize: 24,
             dotSizeLG: 36,
             dotSizeSM: 16,
         },
-        Empty: {
-            colorTextDisabled: '#94a3b8',
-        },
+        Empty: { colorTextDisabled: '#9CA3AF' },
         Message: {
             contentBg: '#ffffff',
             contentPadding: '12px 20px',
         },
-        Notification: {
-            width: 400,
-        },
+        Notification: { width: 400 },
         Tooltip: {
-            colorBgSpotlight: '#1e293b',
+            colorBgSpotlight: '#001F3F',
             borderRadius: 8,
         },
         Breadcrumb: {
-            itemColor: '#64748b',
-            linkColor: '#64748b',
-            linkHoverColor: '#6366f1',
-            separatorColor: '#cbd5e1',
+            itemColor: '#6B7280',
+            linkColor: '#6B7280',
+            linkHoverColor: '#007BFF',
+            separatorColor: '#D1D5DB',
         },
         Tabs: {
-            inkBarColor: '#6366f1',
-            itemActiveColor: '#6366f1',
-            itemHoverColor: '#818cf8',
-            itemSelectedColor: '#6366f1',
+            inkBarColor: '#007BFF',
+            itemActiveColor: '#007BFF',
+            itemHoverColor: '#339CFF',
+            itemSelectedColor: '#007BFF',
         },
         Form: {
             labelFontSize: 14,
             verticalLabelPadding: '0 0 8px',
             itemMarginBottom: 24,
         },
-        List: {
-            itemPadding: '16px 0',
-        },
+        List: { itemPadding: '16px 0' },
     },
 };
 

@@ -60,7 +60,7 @@ export function ChartCard({ title, extra, loading, height = 300, children }: Cha
 
 // Modern color palette
 const COLORS = {
-  primary: ['#6366f1', '#818cf8', '#a5b4fc', '#c7d2fe', '#e0e7ff'],
+  primary: ['#007BFF', '#339CFF', '#60A5FA', '#93C5FD', '#DBEAFE'],
   success: ['#10b981', '#34d399', '#6ee7b7', '#a7f3d0', '#d1fae5'],
   warning: ['#f59e0b', '#fbbf24', '#fcd34d', '#fde68a', '#fef3c7'],
   accent: ['#06b6d4', '#22d3ee', '#67e8f9', '#a5f3fc', '#cffafe'],

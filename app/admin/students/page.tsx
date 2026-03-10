@@ -59,10 +59,10 @@ export default function StudentsPage() {
     const inGroups = students.filter(
       (s: StudentWithGroups) => (s.ProjectGroupMember?.length || 0) > 0
     ).length;
-    return {
-      total: students.length,
-      inGroups,
-      unassigned: students.length - inGroups
+    return { 
+      total: students.length, 
+      inGroups, 
+      unassigned: students.length - inGroups 
     };
   }, [students]);
 
@@ -77,7 +77,6 @@ export default function StudentsPage() {
       StudentName: record.StudentName,
       Email: record.Email || '',
       Phone: record.Phone || '',
-      CGPA: record.CGPA ? String(Number(record.CGPA).toFixed(2)) : undefined as any,
       Description: record.Description || '',
     });
     setEditingId(record.StudentID);
@@ -89,11 +88,10 @@ export default function StudentsPage() {
   };
 
   const handleSubmit = async (values: CreateStudentInput) => {
-    const payload = { ...values, CGPA: values.CGPA ? Number(values.CGPA) : undefined };
     if (editingId) {
-      await updateMutation.mutateAsync({ id: editingId, ...payload });
+      await updateMutation.mutateAsync({ id: editingId, ...values });
     } else {
-      await createMutation.mutateAsync(payload);
+      await createMutation.mutateAsync(values);
     }
     setModalOpen(false);
     form.resetFields();
@@ -109,7 +107,7 @@ export default function StudentsPage() {
           <Avatar
             size={40}
             style={{
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background: 'linear-gradient(135deg, #52c41a 0%, #1890ff 100%)',
               fontWeight: 600,
             }}
           >
@@ -140,8 +138,8 @@ export default function StudentsPage() {
         return (
           <Space size={4} wrap>
             {groups.map((g) => (
-              <Tag
-                key={g.ProjectGroup.ProjectGroupID}
+              <Tag 
+                key={g.ProjectGroup.ProjectGroupID} 
                 color="blue"
                 style={{ borderRadius: 12 }}
               >
@@ -278,37 +276,7 @@ export default function StudentsPage() {
           <Input placeholder="email@example.com" />
         </Form.Item>
         <Form.Item name="Phone" label="Phone">
-          <Input placeholder="Phone number" maxLength={10} />
-        </Form.Item>
-        <Form.Item
-          name="CGPA"
-          label="CGPA"
-          rules={[
-            {
-              validator: (_, value) => {
-                if (value === undefined || value === null || value === '') return Promise.resolve();
-                const num = Number(value);
-                if (isNaN(num) || num < 0 || num > 10) return Promise.reject('CGPA must be between 0.00 and 10.00');
-                return Promise.resolve();
-              },
-            },
-          ]}
-          getValueFromEvent={(e) => {
-            const val = e.target.value;
-            // Allow empty
-            if (val === '') return undefined;
-            // Only allow digits and one decimal point, max 2 decimal places, max value 10.00
-            if (!/^\d{0,2}\.?\d{0,2}$/.test(val)) return form.getFieldValue('CGPA') ?? '';
-            const num = parseFloat(val);
-            if (!isNaN(num) && num > 10) return form.getFieldValue('CGPA') ?? '';
-            return val;
-          }}
-          normalize={(value) => {
-            if (value === undefined || value === '' || value === null) return undefined;
-            return value;
-          }}
-        >
-          <Input placeholder="e.g. 8.50" maxLength={5} />
+          <Input placeholder="Phone number" />
         </Form.Item>
         <Form.Item name="Description" label="Description">
           <Input.TextArea rows={3} placeholder="Optional notes" />

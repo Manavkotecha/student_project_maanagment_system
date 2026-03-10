@@ -87,7 +87,7 @@ export default function FacultyProjectsPage() {
                 title="Total Students"
                 value={stats.totalMembers}
                 icon={<TeamOutlined />}
-                color="#764ba2"
+                color="#007BFF"
               />
             </Col>
             <Col xs={24} sm={8}>
@@ -140,7 +140,7 @@ export default function FacultyProjectsPage() {
                             {group.ProjectTitle}
                           </Text>
                         </div>
-                        <Tag color="purple" style={{ borderRadius: 12 }}>
+                        <Tag color="blue" style={{ borderRadius: 12 }}>
                           {group.ProjectType?.ProjectTypeName}
                         </Tag>
                       </div>

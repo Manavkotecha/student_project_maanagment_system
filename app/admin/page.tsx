@@ -129,7 +129,7 @@ export default function AdminDashboard() {
             title="Total Students"
             value={stats?.totalStudents || 0}
             prefix={<GraduationCap size={22} />}
-            variant="purple"
+            variant="blue"
             description="Enrolled students"
           />
         </Col>
@@ -150,7 +150,7 @@ export default function AdminDashboard() {
           <ChartCard
             title="Projects by Type"
             extra={
-              <Link href="/admin/project-types" className="text-indigo-600 hover:text-indigo-700 flex items-center gap-1 text-sm">
+              <Link href="/admin/project-types" className="text-blue-600 hover:text-blue-700 flex items-center gap-1 text-sm">
                 View All <ArrowRight size={14} />
               </Link>
             }
@@ -166,7 +166,7 @@ export default function AdminDashboard() {
           <ChartCard
             title="Meetings by Status"
             extra={
-              <Link href="/admin/groups" className="text-indigo-600 hover:text-indigo-700 flex items-center gap-1 text-sm">
+              <Link href="/admin/groups" className="text-blue-600 hover:text-blue-700 flex items-center gap-1 text-sm">
                 View All <ArrowRight size={14} />
               </Link>
             }
@@ -191,7 +191,7 @@ export default function AdminDashboard() {
             <Card
               title={<span className="font-semibold">Projects Summary</span>}
               extra={
-                <Link href="/admin/project-types" className="text-indigo-600 hover:text-indigo-700 text-sm">
+                <Link href="/admin/project-types" className="text-blue-600 hover:text-blue-700 text-sm">
                   Manage Types
                 </Link>
               }
@@ -271,11 +271,11 @@ export default function AdminDashboard() {
               </div>
             </Link>
             <Link href="/admin/students">
-              <div className="p-6 rounded-2xl bg-gradient-to-br from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 transition-all cursor-pointer group"
-                style={{ boxShadow: '0 4px 15px -3px rgba(168, 85, 247, 0.2)' }}>
+              <div className="p-6 rounded-2xl bg-gradient-to-br from-sky-50 to-sky-100 hover:from-sky-100 hover:to-sky-200 transition-all cursor-pointer group"
+                style={{ boxShadow: '0 4px 15px -3px rgba(0, 123, 255, 0.15)' }}>
                 <div className="flex flex-col items-center text-center">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg"
-                    style={{ boxShadow: '0 8px 20px -5px rgba(168, 85, 247, 0.5)' }}>
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-sky-500 to-sky-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg"
+                    style={{ boxShadow: '0 8px 20px -5px rgba(14, 165, 233, 0.5)' }}>
                     <GraduationCap size={28} className="text-white" />
                   </div>
                   <p className="font-semibold text-base text-slate-800">Manage Students</p>

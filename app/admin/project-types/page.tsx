@@ -155,7 +155,7 @@ export default function ProjectTypesPage() {
           />
           <Popconfirm
             title="Delete project type?"
-            description="This will also remove related project groups."
+            description="This action cannot be undone."
             onConfirm={() => handleDelete(record.ProjectTypeID)}
             okText="Delete"
             cancelText="Cancel"
@@ -165,6 +165,7 @@ export default function ProjectTypesPage() {
               type="text"
               danger
               icon={<DeleteOutlined />}
+              disabled={record._count?.ProjectGroup ? record._count.ProjectGroup > 0 : false}
             />
           </Popconfirm>
         </Space>
@@ -206,7 +207,7 @@ export default function ProjectTypesPage() {
                 title="Total Projects"
                 value={stats.totalProjects}
                 icon={<ProjectOutlined />}
-                color="#764ba2"
+                color="#007BFF"
               />
             </Col>
           </Row>

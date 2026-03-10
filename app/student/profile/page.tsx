@@ -1,9 +1,16 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Card, Form, Input, Button, Typography, Spin, Descriptions, Tag, Avatar, Row, Col, Space, Divider } from 'antd';
-import { UserOutlined, MailOutlined, PhoneOutlined, SaveOutlined, TeamOutlined, CalendarOutlined, IdcardOutlined, EditOutlined, CloseOutlined } from '@ant-design/icons';
-import { motion } from 'framer-motion';
+import {
+  Card, Form, Input, Button, Typography, Spin,
+  Avatar, Row, Col, Divider, Tag, message,
+} from 'antd';
+import {
+  UserOutlined, MailOutlined, PhoneOutlined, SaveOutlined,
+  EditOutlined, CloseOutlined, TeamOutlined, CalendarOutlined,
+  IdcardOutlined, InfoCircleOutlined, CheckCircleOutlined,
+} from '@ant-design/icons';
+import { motion, AnimatePresence } from 'framer-motion';
 import AppLayout from '@/components/layout/AppLayout';
 import PageHeader from '@/components/ui/PageHeader';
 import { useAuth } from '@/hooks/useAuth';
@@ -21,27 +28,42 @@ interface ProfileFormData {
 
 const containerVariants = {
   hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1 },
-  },
+  visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
 };
+
+/* ── small helper ── */
+function InfoRow({ icon, label, value }: { icon: React.ReactNode; label: string; value?: string | null }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: '12px 0', borderBottom: '1px solid #f1f5f9' }}>
+      <div style={{
+        width: 36, height: 36, borderRadius: 10, background: '#EFF6FF',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+      }}>
+        <span style={{ color: '#007BFF', fontSize: 16 }}>{icon}</span>
+      </div>
+      <div>
+        <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 }}>{label}</div>
+        <div style={{ fontSize: 14, color: '#1e293b', fontWeight: 500 }}>{value || <span style={{ color: '#cbd5e1' }}>Not provided</span>}</div>
+      </div>
+    </div>
+  );
+}
 
 export default function StudentProfilePage() {
   const [form] = Form.useForm<ProfileFormData>();
-  const [isEditing, setIsEditing] = useState(false);
   const { user } = useAuth();
   const { data: students, isLoading } = useStudents();
   const updateMutation = useUpdateStudent();
+  const [editing, setEditing] = useState(false);
 
   const currentStudent = students?.find((s) => s.Email === user?.email);
 
-  React.useEffect(() => {
+  const startEdit = () => {
     if (currentStudent) {
       form.setFieldsValue({
         StudentName: currentStudent.StudentName,
@@ -50,38 +72,29 @@ export default function StudentProfilePage() {
         Description: currentStudent.Description || '',
       });
     }
-  }, [currentStudent, form]);
+    setEditing(true);
+  };
+
+  const cancelEdit = () => {
+    form.resetFields();
+    setEditing(false);
+  };
 
   const handleSubmit = async (values: ProfileFormData) => {
     if (!currentStudent) return;
-
     try {
-      await updateMutation.mutateAsync({
-        id: currentStudent.StudentID,
-        ...values,
-      });
-      setIsEditing(false);
-    } catch (error) {
+      await updateMutation.mutateAsync({ id: currentStudent.StudentID, ...values });
+      setEditing(false);
+      message.success('Profile updated successfully!');
+    } catch {
       // Error handled by mutation
-    }
-  };
-
-  const handleCancelEdit = () => {
-    setIsEditing(false);
-    if (currentStudent) {
-      form.setFieldsValue({
-        StudentName: currentStudent.StudentName,
-        Email: currentStudent.Email || '',
-        Phone: currentStudent.Phone || '',
-        Description: currentStudent.Description || '',
-      });
     }
   };
 
   if (isLoading) {
     return (
       <AppLayout>
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
           <Spin size="large" />
         </div>
       </AppLayout>
@@ -91,8 +104,10 @@ export default function StudentProfilePage() {
   if (!currentStudent) {
     return (
       <AppLayout>
-        <Card style={{ borderRadius: 16 }}>
-          <Text type="warning">Student profile not found. Please contact administrator.</Text>
+        <Card style={{ borderRadius: 16, textAlign: 'center', padding: 40 }}>
+          <InfoCircleOutlined style={{ fontSize: 48, color: '#f59e0b', marginBottom: 16 }} />
+          <Title level={4}>Profile Not Found</Title>
+          <Text type="secondary">Student profile not found. Please contact the administrator.</Text>
         </Card>
       </AppLayout>
     );
@@ -100,200 +115,235 @@ export default function StudentProfilePage() {
 
   return (
     <AppLayout>
-      <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-      >
+      <motion.div initial="hidden" animate="visible" variants={containerVariants}>
         <motion.div variants={itemVariants}>
           <PageHeader
             title="My Profile"
-            subtitle="View and update your personal information"
-            breadcrumbs={[
-              { title: 'Student', href: '/student' },
-              { title: 'Profile' },
-            ]}
+            subtitle="View and manage your personal information"
+            breadcrumbs={[{ title: 'Student', href: '/student' }, { title: 'Profile' }]}
           />
         </motion.div>
 
         <Row gutter={[24, 24]}>
-          {/* Profile Card */}
+          {/* ── Left Column ── */}
           <Col xs={24} lg={8}>
+            {/* Avatar / Hero Card */}
             <motion.div variants={itemVariants}>
               <Card
-                style={{
-                  borderRadius: 16,
-                  textAlign: 'center',
-                  background: 'linear-gradient(180deg, #667eea 0%, #764ba2 100%)',
-                  color: 'white',
-                  border: 'none',
-                }}
+                style={{ borderRadius: 20, border: 'none', boxShadow: '0 8px 32px rgba(0,123,255,0.15)' }}
+                styles={{ body: { padding: 0 } }}
               >
-                <Avatar
-                  size={100}
-                  style={{
-                    backgroundColor: 'white',
-                    color: '#667eea',
-                    fontSize: 36,
-                    fontWeight: 600,
-                    marginBottom: 16,
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
-                  }}
-                >
-                  {getInitials(currentStudent.StudentName)}
-                </Avatar>
-                <Title level={4} style={{ color: 'white', marginBottom: 4 }}>
-                  {currentStudent.StudentName}
-                </Title>
-                <Text style={{ color: 'rgba(255,255,255,0.8)' }}>
-                  {currentStudent.Email}
-                </Text>
+                {/* Gradient banner */}
+                <div style={{ height: 80, background: 'linear-gradient(135deg, #007BFF 0%, #0056b3 100%)', borderRadius: '20px 20px 0 0' }} />
 
-                <Divider style={{ borderColor: 'rgba(255,255,255,0.2)', margin: '24px 0' }} />
+                {/* Avatar */}
+                <div style={{ textAlign: 'center', paddingTop: 0, paddingLeft: 24, paddingRight: 24, paddingBottom: 24 }}>
+                  <Avatar
+                    size={96}
+                    style={{
+                      backgroundColor: '#007BFF',
+                      color: '#fff',
+                      fontSize: 32,
+                      fontWeight: 700,
+                      border: '4px solid #fff',
+                      boxShadow: '0 8px 24px rgba(0,123,255,0.35)',
+                      marginTop: -48,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    {getInitials(currentStudent.StudentName)}
+                  </Avatar>
 
-                <Row gutter={16}>
-                  <Col span={8}>
-                    <div>
-                      <IdcardOutlined style={{ fontSize: 24, marginBottom: 8 }} />
-                      <div style={{ fontSize: 20, fontWeight: 600 }}>#{currentStudent.StudentID}</div>
-                      <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>Student ID</Text>
+                  <Title level={4} style={{ marginTop: 12, marginBottom: 2, color: '#001F3F' }}>
+                    {currentStudent.StudentName}
+                  </Title>
+                  <Text style={{ color: '#64748b', fontSize: 13 }}>{currentStudent.Email}</Text>
+
+                  {/* Editing indicator only (no button – button is in right panel) */}
+                  {editing && (
+                    <div style={{ marginTop: 12 }}>
+                      <Tag color="blue" style={{ borderRadius: 8, padding: '4px 12px', fontWeight: 600 }}>
+                        <EditOutlined /> Editing…
+                      </Tag>
                     </div>
-                  </Col>
-                  <Col span={8}>
-                    <div>
-                      <TeamOutlined style={{ fontSize: 24, marginBottom: 8 }} />
-                      <div style={{ fontSize: 20, fontWeight: 600 }}>
-                        {currentStudent.ProjectGroupMember?.length || 0}
-                      </div>
-                      <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>Groups</Text>
+                  )}
+                </div>
+
+                <Divider style={{ margin: 0 }} />
+
+                {/* Stats Row */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)' }}>
+                  {[
+                    { icon: <IdcardOutlined />, value: `#${currentStudent.StudentID}`, label: 'Student ID' },
+                    { icon: <TeamOutlined />, value: currentStudent.ProjectGroupMember?.length || 0, label: 'Groups' },
+                    { icon: <span style={{ display: 'inline-block', width: 10, height: 10, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 6px #22c55e' }} />, value: 'Active', label: 'Status' },
+                  ].map((s, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        textAlign: 'center', padding: '16px 8px',
+                        borderRight: i < 2 ? '1px solid #f1f5f9' : 'none',
+                      }}
+                    >
+                      <div style={{ color: '#007BFF', fontSize: 20, marginBottom: 4 }}>{s.icon}</div>
+                      <div style={{ fontWeight: 700, fontSize: 15, color: '#001F3F' }}>{s.value}</div>
+                      <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>{s.label}</div>
                     </div>
-                  </Col>
-                  <Col span={8}>
-                    <div>
-                      <CalendarOutlined style={{ fontSize: 24, marginBottom: 8 }} />
-                      <div style={{ fontSize: 14, fontWeight: 600 }}>
-                        {formatDate(currentStudent.Created).split(' ')[0]}
-                      </div>
-                      <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12 }}>Joined</Text>
-                    </div>
-                  </Col>
-                </Row>
+                  ))}
+                </div>
               </Card>
             </motion.div>
 
-            {/* Quick Info */}
+            {/* Account Details */}
             <motion.div variants={itemVariants}>
-              <Card style={{ borderRadius: 16, marginTop: 24 }}>
-                <Descriptions column={1} size="small" title="Account Details">
-                  <Descriptions.Item label="Member Since">
-                    {formatDate(currentStudent.Created)}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Last Updated">
-                    {formatDate(currentStudent.Modified)}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Phone">
-                    {currentStudent.Phone || '—'}
-                  </Descriptions.Item>
-                </Descriptions>
+              <Card style={{ borderRadius: 20, marginTop: 20, border: '1px solid #f1f5f9', boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}>
+                <Title level={5} style={{ marginBottom: 16, color: '#001F3F' }}>Account Details</Title>
+                <InfoRow icon={<CalendarOutlined />} label="Member Since" value={formatDate(currentStudent.Created)} />
+                <InfoRow icon={<CheckCircleOutlined />} label="Last Updated" value={formatDate(currentStudent.Modified)} />
+                <InfoRow icon={<PhoneOutlined />} label="Phone" value={currentStudent.Phone} />
               </Card>
             </motion.div>
           </Col>
 
-          {/* Edit Form */}
+          {/* ── Right Column ── */}
           <Col xs={24} lg={16}>
-            <motion.div variants={itemVariants}>
-              <Card
-                title={
-                  <Space>
-                    <UserOutlined style={{ color: '#667eea' }} />
-                    <span>{isEditing ? 'Edit Profile' : 'Profile Details'}</span>
-                  </Space>
-                }
-                extra={
-                  !isEditing && (
-                    <Button
-                      type="primary"
-                      icon={<EditOutlined />}
-                      onClick={() => setIsEditing(true)}
-                      style={{
-                        borderRadius: 8,
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                        border: 'none',
-                      }}
-                    >
-                      Edit Data
-                    </Button>
-                  )
-                }
-                style={{ borderRadius: 16 }}
-              >
-                {/* Always render Form so useForm stays connected */}
-                <div style={{ display: isEditing ? 'block' : 'none' }}>
-                  <Form
-                    form={form}
-                    layout="vertical"
-                    onFinish={handleSubmit}
-                    size="large"
+            <AnimatePresence mode="wait">
+              {!editing ? (
+                /* ── VIEW MODE ── */
+                <motion.div
+                  key="view"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.25 }}
+                >
+                  <Card
+                    style={{ borderRadius: 20, border: '1px solid #f1f5f9', boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}
+                    title={
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <span style={{ fontWeight: 700, color: '#001F3F' }}>Profile Information</span>
+                        <Button
+                          type="primary"
+                          icon={<EditOutlined />}
+                          onClick={startEdit}
+                          style={{
+                            borderRadius: 10, background: '#007BFF', border: 'none',
+                            fontWeight: 600, boxShadow: '0 4px 12px rgba(0,123,255,0.3)',
+                          }}
+                        >
+                          Edit Profile
+                        </Button>
+                      </div>
+                    }
                   >
-                    <Row gutter={16}>
-                      <Col xs={24} md={12}>
-                        <Form.Item
-                          name="StudentName"
-                          label={<span style={{ fontWeight: 500 }}>Full Name</span>}
-                          rules={[{ required: true, message: 'Please enter your name' }]}
-                        >
-                          <Input
-                            prefix={<UserOutlined style={{ color: '#8c8c8c' }} />}
-                            placeholder="Your full name"
-                            style={{ borderRadius: 8 }}
-                          />
-                        </Form.Item>
-                      </Col>
-                      <Col xs={24} md={12}>
-                        <Form.Item
-                          name="Email"
-                          label={<span style={{ fontWeight: 500 }}>Email Address</span>}
-                          rules={[
-                            { required: true, message: 'Please enter your email' },
-                            { type: 'email', message: 'Please enter a valid email' },
-                          ]}
-                        >
-                          <Input
-                            prefix={<MailOutlined style={{ color: '#8c8c8c' }} />}
-                            placeholder="your.email@example.com"
-                            style={{ borderRadius: 8 }}
-                          />
-                        </Form.Item>
-                      </Col>
-                    </Row>
+                    <InfoRow icon={<UserOutlined />} label="Full Name" value={currentStudent.StudentName} />
+                    <InfoRow icon={<MailOutlined />} label="Email Address" value={currentStudent.Email} />
+                    <InfoRow icon={<PhoneOutlined />} label="Phone Number" value={currentStudent.Phone} />
+                    <div style={{ paddingTop: 16 }}>
+                      <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>About Me</div>
+                      <div style={{
+                        background: '#f8fafc', borderRadius: 12, padding: '14px 16px',
+                        fontSize: 14, color: currentStudent.Description ? '#1e293b' : '#cbd5e1',
+                        lineHeight: 1.7, minHeight: 80,
+                      }}>
+                        {currentStudent.Description || 'No description provided. Click Edit Profile to add one.'}
+                      </div>
+                    </div>
+                  </Card>
 
-                    <Form.Item
-                      name="Phone"
-                      label={<span style={{ fontWeight: 500 }}>Phone Number</span>}
+                  {/* Groups */}
+                  {currentStudent.ProjectGroupMember && currentStudent.ProjectGroupMember.length > 0 && (
+                    <Card
+                      style={{ borderRadius: 20, marginTop: 20, border: '1px solid #f1f5f9', boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}
+                      title={<span style={{ fontWeight: 700, color: '#001F3F' }}><TeamOutlined style={{ color: '#007BFF', marginRight: 8 }} />My Groups</span>}
                     >
-                      <Input
-                        prefix={<PhoneOutlined style={{ color: '#8c8c8c' }} />}
-                        placeholder="Your phone number"
-                        style={{ borderRadius: 8 }}
-                      />
-                    </Form.Item>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+                        {currentStudent.ProjectGroupMember.map((m) => (
+                          <Tag
+                            key={m.ProjectGroup.ProjectGroupID}
+                            style={{
+                              padding: '6px 16px', borderRadius: 10, fontSize: 13,
+                              background: '#EFF6FF', color: '#007BFF', border: '1px solid #DBEAFE', fontWeight: 500,
+                            }}
+                          >
+                            {m.ProjectGroup.ProjectGroupName}
+                          </Tag>
+                        ))}
+                      </div>
+                    </Card>
+                  )}
+                </motion.div>
+              ) : (
+                /* ── EDIT MODE ── */
+                <motion.div
+                  key="edit"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.25 }}
+                >
+                  <Card
+                    style={{ borderRadius: 20, border: '1.5px solid #007BFF', boxShadow: '0 8px 32px rgba(0,123,255,0.1)' }}
+                    title={
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#007BFF', animation: 'pulse 2s infinite' }} />
+                        <span style={{ fontWeight: 700, color: '#007BFF' }}>Editing Profile</span>
+                      </div>
+                    }
+                  >
+                    <Form form={form} layout="vertical" onFinish={handleSubmit} size="large">
+                      <Row gutter={16}>
+                        <Col xs={24} md={12}>
+                          <Form.Item
+                            name="StudentName"
+                            label={<span style={{ fontWeight: 600, color: '#374151' }}>Full Name</span>}
+                            rules={[{ required: true, message: 'Please enter your name' }]}
+                          >
+                            <Input
+                              prefix={<UserOutlined style={{ color: '#007BFF' }} />}
+                              placeholder="Your full name"
+                              style={{ borderRadius: 10 }}
+                            />
+                          </Form.Item>
+                        </Col>
+                        <Col xs={24} md={12}>
+                          <Form.Item
+                            name="Email"
+                            label={<span style={{ fontWeight: 600, color: '#374151' }}>Email Address</span>}
+                            rules={[
+                              { required: true, message: 'Please enter your email' },
+                              { type: 'email', message: 'Enter a valid email' },
+                            ]}
+                          >
+                            <Input
+                              prefix={<MailOutlined style={{ color: '#007BFF' }} />}
+                              placeholder="your.email@example.com"
+                              style={{ borderRadius: 10 }}
+                            />
+                          </Form.Item>
+                        </Col>
+                      </Row>
 
-                    <Form.Item
-                      name="Description"
-                      label={<span style={{ fontWeight: 500 }}>About Me</span>}
-                    >
-                      <Input.TextArea
-                        autoSize={{ minRows: 4, maxRows: 10 }}
-                        maxLength={500}
-                        showCount
-                        placeholder="Tell us about yourself, your interests, skills..."
-                        style={{ borderRadius: 8, whiteSpace: 'pre-wrap' }}
-                      />
-                    </Form.Item>
+                      <Form.Item name="Phone" label={<span style={{ fontWeight: 600, color: '#374151' }}>Phone Number</span>}>
+                        <Input
+                          prefix={<PhoneOutlined style={{ color: '#007BFF' }} />}
+                          placeholder="Your phone number"
+                          style={{ borderRadius: 10 }}
+                        />
+                      </Form.Item>
 
-                    <Form.Item style={{ marginBottom: 0 }}>
-                      <Space>
-                        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                      <Form.Item name="Description" label={<span style={{ fontWeight: 600, color: '#374151' }}>About Me</span>}>
+                        <Input.TextArea
+                          rows={4}
+                          placeholder="Tell us about yourself, your interests, skills..."
+                          style={{ borderRadius: 10 }}
+                        />
+                      </Form.Item>
+
+                      <Form.Item style={{ marginBottom: 0 }}>
+                        <div style={{ display: 'flex', gap: 12 }}>
                           <Button
                             type="primary"
                             htmlType="submit"
@@ -301,147 +351,29 @@ export default function StudentProfilePage() {
                             loading={updateMutation.isPending}
                             size="large"
                             style={{
-                              borderRadius: 8,
-                              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                              border: 'none',
-                              boxShadow: '0 4px 12px rgba(102, 126, 234, 0.4)',
+                              borderRadius: 10, flex: 1,
+                              background: 'linear-gradient(135deg, #007BFF 0%, #0056b3 100%)',
+                              border: 'none', fontWeight: 600,
+                              boxShadow: '0 4px 14px rgba(0,123,255,0.4)',
                             }}
                           >
                             Save Changes
                           </Button>
-                        </motion.div>
-                        <Button
-                          icon={<CloseOutlined />}
-                          onClick={handleCancelEdit}
-                          size="large"
-                          style={{ borderRadius: 8 }}
-                        >
-                          Cancel
-                        </Button>
-                      </Space>
-                    </Form.Item>
-                  </Form>
-                </div>
-
-                {!isEditing && (
-                  <div>
-                    <Row gutter={16} style={{ marginBottom: 20 }}>
-                      <Col xs={24} md={12}>
-                        <div style={{ marginBottom: 16 }}>
-                          <Text type="secondary" style={{ fontSize: 13, fontWeight: 500, display: 'block', marginBottom: 6 }}>
-                            <span style={{ color: '#ff4d4f' }}>* </span>Full Name
-                          </Text>
-                          <div style={{
-                            padding: '8px 12px',
-                            borderRadius: 8,
-                            border: '1px solid #d9d9d9',
-                            background: '#fafafa',
-                            fontSize: 15,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 8,
-                            minHeight: 40,
-                          }}>
-                            <UserOutlined style={{ color: '#8c8c8c' }} />
-                            {currentStudent.StudentName}
-                          </div>
+                          <Button
+                            size="large"
+                            icon={<CloseOutlined />}
+                            onClick={cancelEdit}
+                            style={{ borderRadius: 10, fontWeight: 600 }}
+                          >
+                            Cancel
+                          </Button>
                         </div>
-                      </Col>
-                      <Col xs={24} md={12}>
-                        <div style={{ marginBottom: 16 }}>
-                          <Text type="secondary" style={{ fontSize: 13, fontWeight: 500, display: 'block', marginBottom: 6 }}>
-                            <span style={{ color: '#ff4d4f' }}>* </span>Email Address
-                          </Text>
-                          <div style={{
-                            padding: '8px 12px',
-                            borderRadius: 8,
-                            border: '1px solid #d9d9d9',
-                            background: '#fafafa',
-                            fontSize: 15,
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 8,
-                            minHeight: 40,
-                          }}>
-                            <MailOutlined style={{ color: '#8c8c8c' }} />
-                            {currentStudent.Email}
-                          </div>
-                        </div>
-                      </Col>
-                    </Row>
-
-                    <div style={{ marginBottom: 20 }}>
-                      <Text type="secondary" style={{ fontSize: 13, fontWeight: 500, display: 'block', marginBottom: 6 }}>
-                        Phone Number
-                      </Text>
-                      <div style={{
-                        padding: '8px 12px',
-                        borderRadius: 8,
-                        border: '1px solid #d9d9d9',
-                        background: '#fafafa',
-                        fontSize: 15,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 8,
-                        minHeight: 40,
-                      }}>
-                        <PhoneOutlined style={{ color: '#8c8c8c' }} />
-                        {currentStudent.Phone || '—'}
-                      </div>
-                    </div>
-
-                    <div>
-                      <Text type="secondary" style={{ fontSize: 13, fontWeight: 500, display: 'block', marginBottom: 6 }}>
-                        About Me
-                      </Text>
-                      <div style={{
-                        padding: '12px',
-                        borderRadius: 8,
-                        border: '1px solid #d9d9d9',
-                        background: '#fafafa',
-                        fontSize: 15,
-                        minHeight: 100,
-                        whiteSpace: 'pre-wrap',
-                        lineHeight: 1.6,
-                      }}>
-                        {currentStudent.Description || '—'}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </Card>
-            </motion.div>
-
-            {/* My Groups */}
-            {currentStudent.ProjectGroupMember && currentStudent.ProjectGroupMember.length > 0 && (
-              <motion.div variants={itemVariants}>
-                <Card
-                  title={
-                    <Space>
-                      <TeamOutlined style={{ color: '#667eea' }} />
-                      <span>My Groups</span>
-                    </Space>
-                  }
-                  style={{ borderRadius: 16, marginTop: 24 }}
-                >
-                  <Space wrap>
-                    {currentStudent.ProjectGroupMember.map((membership) => (
-                      <Tag
-                        key={membership.ProjectGroup.ProjectGroupID}
-                        color="blue"
-                        style={{
-                          padding: '8px 16px',
-                          fontSize: 14,
-                          borderRadius: 12,
-                        }}
-                      >
-                        {membership.ProjectGroup.ProjectGroupName}
-                      </Tag>
-                    ))}
-                  </Space>
-                </Card>
-              </motion.div>
-            )}
+                      </Form.Item>
+                    </Form>
+                  </Card>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </Col>
         </Row>
       </motion.div>

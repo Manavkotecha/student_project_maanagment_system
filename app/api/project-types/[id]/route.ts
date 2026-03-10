@@ -124,41 +124,20 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
             return errorResponse('Invalid project type ID', 400);
         }
 
-        // Cascade delete related records in a transaction
-        await prisma.$transaction(async (tx) => {
-            // Get all project groups of this type
-            const groups = await tx.projectGroup.findMany({
-                where: { ProjectTypeID: projectTypeId },
-                select: { ProjectGroupID: true },
-            });
-            const groupIds = groups.map((g) => g.ProjectGroupID);
+        // Check if project type is in use
+        const groupCount = await prisma.projectGroup.count({
+            where: { ProjectTypeID: projectTypeId },
+        });
 
-            if (groupIds.length > 0) {
-                // Delete meeting attendance for meetings in these groups
-                await tx.projectMeetingAttendance.deleteMany({
-                    where: { ProjectMeeting: { ProjectGroupID: { in: groupIds } } },
-                });
+        if (groupCount > 0) {
+            return errorResponse(
+                `Cannot delete: This project type is used by ${groupCount} group(s)`,
+                400
+            );
+        }
 
-                // Delete meetings in these groups
-                await tx.projectMeeting.deleteMany({
-                    where: { ProjectGroupID: { in: groupIds } },
-                });
-
-                // Delete group members
-                await tx.projectGroupMember.deleteMany({
-                    where: { ProjectGroupID: { in: groupIds } },
-                });
-
-                // Delete the project groups
-                await tx.projectGroup.deleteMany({
-                    where: { ProjectTypeID: projectTypeId },
-                });
-            }
-
-            // Delete the project type
-            await tx.projectType.delete({
-                where: { ProjectTypeID: projectTypeId },
-            });
+        await prisma.projectType.delete({
+            where: { ProjectTypeID: projectTypeId },
         });
 
         return successResponse(null, 'Project type deleted successfully');

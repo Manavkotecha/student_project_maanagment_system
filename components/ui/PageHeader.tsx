@@ -59,7 +59,7 @@ export default function PageHeader({
               type="text"
               icon={<ArrowLeft size={20} />}
               onClick={handleBack}
-              className="mt-1 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50"
+              className="mt-1 text-slate-500 hover:text-blue-600 hover:bg-blue-50"
               style={{ width: 40, height: 40 }}
             />
           )}

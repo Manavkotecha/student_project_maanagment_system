@@ -122,7 +122,7 @@ export default function StaffPage() {
           <Avatar
             size={40}
             style={{
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background: 'linear-gradient(135deg, #007BFF 0%, #0056b3 100%)',
               fontWeight: 600,
             }}
           >
@@ -173,30 +173,37 @@ export default function StaffPage() {
       title: 'Actions',
       key: 'actions',
       width: 120,
-      render: (_, record) => (
-        <Space size="small">
-          <Button
-            type="text"
-            icon={<EditOutlined />}
-            onClick={() => handleEdit(record)}
-            style={{ color: '#667eea' }}
-          />
-          <Popconfirm
-            title="Delete staff member?"
-            description="This will also remove related assignments."
-            onConfirm={() => handleDelete(record.StaffID)}
-            okText="Delete"
-            cancelText="Cancel"
-            okButtonProps={{ danger: true }}
-          >
+      render: (_, record) => {
+        const hasAssignments =
+          (record._count?.ProjectGroup_ProjectGroup_ConvenerStaffIDToStaff || 0) > 0 ||
+          (record._count?.ProjectMeeting || 0) > 0;
+
+        return (
+          <Space size="small">
             <Button
               type="text"
-              danger
-              icon={<DeleteOutlined />}
+              icon={<EditOutlined />}
+              onClick={() => handleEdit(record)}
+              style={{ color: '#667eea' }}
             />
-          </Popconfirm>
-        </Space>
-      ),
+            <Popconfirm
+              title="Delete staff member?"
+              description="This action cannot be undone."
+              onConfirm={() => handleDelete(record.StaffID)}
+              okText="Delete"
+              cancelText="Cancel"
+              okButtonProps={{ danger: true }}
+            >
+              <Button
+                type="text"
+                danger
+                icon={<DeleteOutlined />}
+                disabled={hasAssignments}
+              />
+            </Popconfirm>
+          </Space>
+        );
+      },
     },
   ];
 
@@ -234,7 +241,7 @@ export default function StaffPage() {
                 title="Active Guides"
                 value={stats.activeGuides}
                 icon={<TeamOutlined />}
-                color="#764ba2"
+                color="#007BFF"
               />
             </Col>
             <Col xs={24} sm={8}>
@@ -292,7 +299,7 @@ export default function StaffPage() {
           <Input placeholder="email@example.com" />
         </Form.Item>
         <Form.Item name="Phone" label="Phone">
-          <Input placeholder="Phone number" maxLength={10} />
+          <Input placeholder="Phone number" />
         </Form.Item>
         <Form.Item
           name="Password"

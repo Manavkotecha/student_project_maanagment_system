@@ -34,6 +34,7 @@ export default function StudentDashboard() {
 
   const { data: meetings, isLoading } = useMeetings();
 
+  // Filter meetings for groups this student belongs to
   const myGroupIds = currentStudent?.ProjectGroupMember?.map((m: { ProjectGroup: { ProjectGroupID: number } }) => m.ProjectGroup.ProjectGroupID) || [];
 
   const myMeetings = meetings?.filter(
@@ -149,6 +150,7 @@ export default function StudentDashboard() {
         </Col>
       </Row>
 
+      {/* Main Content */}
       <Row gutter={[28, 28]}>
         {/* My Groups */}
         <Col xs={24} lg={12}>
@@ -160,12 +162,12 @@ export default function StudentDashboard() {
             <Card
               title={
                 <div className="flex items-center gap-2">
-                  <FolderKanban size={18} className="text-indigo-600" />
+                  <FolderKanban size={18} className="text-blue-600" />
                   <span className="font-semibold">My Groups</span>
                 </div>
               }
               extra={
-                <Link href="/student/groups" className="text-indigo-600 hover:text-indigo-700 flex items-center gap-1 text-sm">
+                <Link href="/student/groups" className="text-blue-600 hover:text-blue-700 flex items-center gap-1 text-sm">
                   View All <ArrowRight size={14} />
                 </Link>
               }
@@ -201,7 +203,7 @@ export default function StudentDashboard() {
                         transition: 'all 0.2s ease',
                         cursor: 'pointer',
                       }}
-                      className="hover:border-indigo-200 hover:shadow-md"
+                      className="hover:border-blue-200 hover:shadow-md"
                     >
                       {/* Header: Group Name + Leader Badge */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
@@ -214,7 +216,7 @@ export default function StudentDashboard() {
                           </Tag>
                         )}
                         {membership.ProjectGroup.ProjectType && (
-                          <Tag color="purple" style={{ margin: 0, lineHeight: '20px', fontSize: 12 }}>
+                          <Tag color="blue" style={{ margin: 0, lineHeight: '20px', fontSize: 12 }}>
                             {membership.ProjectGroup.ProjectType.ProjectTypeName}
                           </Tag>
                         )}
@@ -232,7 +234,7 @@ export default function StudentDashboard() {
                             {membership.ProjectGroup.ProjectGroupMember?.map((member, idx) => (
                               <Avatar
                                 key={idx}
-                                className="bg-indigo-500"
+                                className="bg-blue-500"
                                 size="small"
                               >
                                 {member.Student?.StudentName?.[0] || 'S'}
@@ -262,12 +264,12 @@ export default function StudentDashboard() {
             <Card
               title={
                 <div className="flex items-center gap-2">
-                  <Calendar size={18} className="text-indigo-600" />
+                  <Calendar size={18} className="text-blue-600" />
                   <span className="font-semibold">Upcoming Meetings</span>
                 </div>
               }
               extra={
-                <Link href="/student/meetings" className="text-indigo-600 hover:text-indigo-700 flex items-center gap-1 text-sm">
+                <Link href="/student/meetings" className="text-blue-600 hover:text-blue-700 flex items-center gap-1 text-sm">
                   View All <ArrowRight size={14} />
                 </Link>
               }
@@ -337,13 +339,13 @@ export default function StudentDashboard() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             <Link href="/student/groups">
               <div
-                className="p-6 rounded-2xl bg-gradient-to-br from-indigo-50 to-indigo-100 hover:from-indigo-100 hover:to-indigo-200 transition-all cursor-pointer group"
-                style={{ boxShadow: '0 4px 15px -3px rgba(99, 102, 241, 0.2)' }}
+                className="p-6 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 transition-all cursor-pointer group"
+                style={{ boxShadow: '0 4px 15px -3px rgba(0, 123, 255, 0.2)' }}
               >
                 <div className="flex flex-col items-center text-center">
                   <div
-                    className="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg"
-                    style={{ boxShadow: '0 8px 20px -5px rgba(99, 102, 241, 0.5)' }}
+                    className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg"
+                    style={{ boxShadow: '0 8px 20px -5px rgba(0, 123, 255, 0.5)' }}
                   >
                     <FolderKanban size={28} className="text-white" />
                   </div>
@@ -371,13 +373,13 @@ export default function StudentDashboard() {
             </Link>
             <Link href="/student/profile">
               <div
-                className="p-6 rounded-2xl bg-gradient-to-br from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 transition-all cursor-pointer group"
-                style={{ boxShadow: '0 4px 15px -3px rgba(168, 85, 247, 0.2)' }}
+                className="p-6 rounded-2xl bg-gradient-to-br from-sky-50 to-sky-100 hover:from-sky-100 hover:to-sky-200 transition-all cursor-pointer group"
+                style={{ boxShadow: '0 4px 15px -3px rgba(0, 123, 255, 0.15)' }}
               >
                 <div className="flex flex-col items-center text-center">
                   <div
-                    className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg"
-                    style={{ boxShadow: '0 8px 20px -5px rgba(168, 85, 247, 0.5)' }}
+                    className="w-16 h-16 rounded-2xl bg-gradient-to-br from-sky-500 to-sky-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg"
+                    style={{ boxShadow: '0 8px 20px -5px rgba(14, 165, 233, 0.5)' }}
                   >
                     <UserCircle size={28} className="text-white" />
                   </div>

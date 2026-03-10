@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Create meeting with attendance records for all group members
-        const meeting = await prisma.$transaction(async (tx: typeof prisma) => {
+        const meeting = await prisma.$transaction(async (tx) => {
             const newMeeting = await tx.projectMeeting.create({
                 data: {
                     ProjectGroupID: validation.data.ProjectGroupID,

@@ -89,7 +89,7 @@ export default function StudentGroupsPage() {
                 title="Team Members"
                 value={stats.totalMembers}
                 icon={<TeamOutlined />}
-                color="#764ba2"
+                color="#007BFF"
               />
             </Col>
             <Col xs={24} sm={8}>
@@ -129,7 +129,7 @@ export default function StudentGroupsPage() {
                 }}
                 styles={{
                   header: {
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+                    background: 'linear-gradient(135deg, #007BFF 0%, #0056b3 50%, #60A5FA 100%)',
                     borderBottom: 'none',
                     padding: '20px 24px',
                   }
@@ -202,7 +202,7 @@ export default function StudentGroupsPage() {
                 </Title>
                 <Row gutter={[16, 16]}>
                   {(group.ProjectGroupMember || []).map((member) => (
-                    <Col key={member.Student?.StudentID || member.StudentID} xs={24} sm={12} md={8} lg={6}>
+                    <Col key={member.Student?.StudentID} xs={24} sm={12} md={8} lg={6}>
                       <Card
                         size="small"
                         hoverable
@@ -225,7 +225,7 @@ export default function StudentGroupsPage() {
                               style={{
                                 background: member.IsGroupLeader
                                   ? 'linear-gradient(135deg, #faad14 0%, #fa8c16 100%)'
-                                  : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                  : 'linear-gradient(135deg, #007BFF 0%, #0056b3 100%)',
                                 boxShadow: member.IsGroupLeader
                                   ? '0 4px 12px rgba(250, 173, 20, 0.4)'
                                   : '0 4px 12px rgba(102, 126, 234, 0.4)',
@@ -257,7 +257,7 @@ export default function StudentGroupsPage() {
                                     fontSize: 11,
                                     fontWeight: 600,
                                     border: 'none',
-                                    background: 'linear-gradient(135deg, #667eea20 0%, #764ba220 100%)',
+                                    background: 'linear-gradient(135deg, #007BFF20 0%, #0056b320 100%)',
                                     color: '#667eea',
                                   }}
                                 >

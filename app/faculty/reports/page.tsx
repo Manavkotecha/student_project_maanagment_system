@@ -110,7 +110,7 @@ export default function FacultyReportsPage() {
       title: 'Type',
       key: 'type',
       render: (_, record) => (
-        <Tag color="purple">{record.ProjectType?.ProjectTypeName}</Tag>
+        <Tag color="blue">{record.ProjectType?.ProjectTypeName}</Tag>
       ),
     },
     {

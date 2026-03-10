@@ -18,9 +18,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SPMS - Student Project Management System",
-  description: "Comprehensive project management system for academic institutions",
-  keywords: ["student", "project", "management", "academic", "education"],
+  title: "Manav's Schedule – Smart Time Management",
+  description: "A seamless platform to organise tasks, set reminders, track progress, and collaborate — all from one intuitive dashboard.",
+  keywords: ["schedule", "planner", "time management", "reminders", "collaboration", "productivity"],
 };
 
 export default function RootLayout({

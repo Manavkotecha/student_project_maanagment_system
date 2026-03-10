@@ -63,7 +63,7 @@ export default function SignupPage() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        background: '#f8fafc',
         position: 'relative',
         overflow: 'hidden',
         padding: 24,
@@ -77,7 +77,7 @@ export default function SignupPage() {
           right: '-10%',
           width: '600px',
           height: '600px',
-          background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(0,123,255,0.05) 0%, transparent 70%)',
           borderRadius: '50%',
           animation: 'float 15s ease-in-out infinite',
         }}
@@ -89,7 +89,7 @@ export default function SignupPage() {
           left: '-10%',
           width: '500px',
           height: '500px',
-          background: 'radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(0,123,255,0.08) 0%, transparent 70%)',
           borderRadius: '50%',
           animation: 'float 20s ease-in-out infinite reverse',
         }}
@@ -117,20 +117,19 @@ export default function SignupPage() {
         style={{
           width: '100%',
           maxWidth: 520,
-          background: 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(20px)',
-          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.5)',
+          background: '#ffffff',
+          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.02)',
           borderRadius: 24,
-          border: '1px solid rgba(255, 255, 255, 0.3)',
+          border: '1px solid rgba(0, 0, 0, 0.04)',
           position: 'relative',
           zIndex: 1,
           animation: 'slideIn 0.6s ease-out',
         }}
         styles={{
-          body: { padding: 48 },
+          body: { padding: '40px 32px' },
         }}
       >
-        <Space direction="vertical" size="large" style={{ width: '100%' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24, width: '100%' }}>
           {/* Logo and Title Section */}
           <div style={{ textAlign: 'center', marginBottom: 8 }}>
             <div
@@ -141,8 +140,8 @@ export default function SignupPage() {
                 width: 72,
                 height: 72,
                 borderRadius: 20,
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                boxShadow: '0 8px 24px rgba(102, 126, 234, 0.4)',
+                background: 'linear-gradient(135deg, #007BFF 0%, #0056b3 100%)',
+                boxShadow: '0 8px 24px rgba(0, 123, 255, 0.4)',
                 marginBottom: 20,
               }}
             >
@@ -151,12 +150,10 @@ export default function SignupPage() {
             <Title
               level={2}
               style={{
-                marginBottom: 8,
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
+                marginBottom: 4,
+                color: '#001F3F',
                 fontWeight: 700,
-                fontSize: 32,
+                fontSize: 28,
               }}
             >
               Create Account
@@ -180,7 +177,6 @@ export default function SignupPage() {
             size="large"
             autoComplete="off"
             initialValues={{ role: 'student' }}
-            style={{ marginTop: 16 }}
           >
             <Form.Item
               name="name"
@@ -194,7 +190,7 @@ export default function SignupPage() {
                 prefix={<UserOutlined style={{ color: '#8c8c8c', fontSize: 16 }} />}
                 placeholder="John Doe"
                 style={{
-                  height: 50,
+                  height: 48,
                   borderRadius: 12,
                   fontSize: 15,
                   border: '1.5px solid #e8e8e8',
@@ -215,7 +211,7 @@ export default function SignupPage() {
                 prefix={<MailOutlined style={{ color: '#8c8c8c', fontSize: 16 }} />}
                 placeholder="you@example.com"
                 style={{
-                  height: 50,
+                  height: 48,
                   borderRadius: 12,
                   fontSize: 15,
                   border: '1.5px solid #e8e8e8',
@@ -232,7 +228,7 @@ export default function SignupPage() {
               <Select
                 placeholder="Select your role"
                 style={{
-                  height: 50,
+                  height: 48,
                 }}
                 suffixIcon={<TeamOutlined style={{ color: '#8c8c8c' }} />}
               >
@@ -263,7 +259,7 @@ export default function SignupPage() {
                 prefix={<LockOutlined style={{ color: '#8c8c8c', fontSize: 16 }} />}
                 placeholder="Minimum 6 characters"
                 style={{
-                  height: 50,
+                  height: 48,
                   borderRadius: 12,
                   fontSize: 15,
                   border: '1.5px solid #e8e8e8',
@@ -287,13 +283,12 @@ export default function SignupPage() {
                   },
                 }),
               ]}
-              style={{ marginBottom: 24 }}
             >
               <Input.Password
                 prefix={<LockOutlined style={{ color: '#8c8c8c', fontSize: 16 }} />}
                 placeholder="Re-enter your password"
                 style={{
-                  height: 50,
+                  height: 48,
                   borderRadius: 12,
                   fontSize: 15,
                   border: '1.5px solid #e8e8e8',
@@ -302,7 +297,7 @@ export default function SignupPage() {
               />
             </Form.Item>
 
-            <Form.Item style={{ marginBottom: 0 }}>
+            <Form.Item>
               <Button
                 type="primary"
                 htmlType="submit"
@@ -310,22 +305,22 @@ export default function SignupPage() {
                 icon={<UserAddOutlined />}
                 block
                 style={{
-                  height: 52,
+                  height: 48,
                   fontSize: 16,
                   fontWeight: 600,
                   borderRadius: 12,
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  background: 'linear-gradient(135deg, #007BFF 0%, #0056b3 100%)',
                   border: 'none',
-                  boxShadow: '0 4px 16px rgba(102, 126, 234, 0.4)',
+                  boxShadow: '0 4px 16px rgba(0, 123, 255, 0.4)',
                   transition: 'all 0.3s ease',
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(102, 126, 234, 0.5)';
+                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(0, 123, 255, 0.5)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 4px 16px rgba(102, 126, 234, 0.4)';
+                  e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 123, 255, 0.4)';
                 }}
               >
                 Create Account
@@ -340,7 +335,7 @@ export default function SignupPage() {
               <Link
                 href="/login"
                 style={{
-                  color: '#667eea',
+                  color: '#007BFF',
                   fontWeight: 600,
                   textDecoration: 'none',
                   transition: 'all 0.2s ease',
@@ -350,7 +345,7 @@ export default function SignupPage() {
               </Link>
             </Text>
           </div>
-        </Space>
+        </div>
       </Card>
     </div>
   );

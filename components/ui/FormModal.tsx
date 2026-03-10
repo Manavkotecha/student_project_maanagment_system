@@ -41,8 +41,16 @@ export default function FormModal<T = Record<string, unknown>>({
       onOk={handleOk}
       onCancel={handleCancel}
       confirmLoading={loading}
-      forceRender
+      destroyOnHidden
       maskClosable={false}
+      centered
+      styles={{
+        body: {
+          maxHeight: '68vh',
+          overflowY: 'auto',
+          paddingRight: 4,
+        },
+      }}
     >
       <Spin spinning={loading}>
         <Form

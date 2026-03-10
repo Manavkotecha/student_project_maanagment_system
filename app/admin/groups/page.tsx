@@ -13,6 +13,7 @@ import {
   Drawer,
   Flex,
   Avatar,
+  InputNumber,
   Divider,
   App,
   Row,
@@ -75,7 +76,7 @@ export default function GroupsPage() {
   const { data: groups, isLoading, refetch } = useGroups({ search: searchQuery });
   const { data: projectTypes } = useProjectTypes();
   const { data: staff } = useStaff();
-  const { data: availableStudents, refetch: refetchAvailable } = useStudents('', true);
+  const { data: availableStudents } = useStudents('', true);
   const createMutation = useCreateGroup();
   const updateMutation = useUpdateGroup();
   const deleteMutation = useDeleteGroup();
@@ -154,19 +155,15 @@ export default function GroupsPage() {
     try {
       const values = await memberForm.validateFields();
       if (selectedGroup) {
-        const student = availableStudents?.find((s) => s.StudentID === values.studentId);
         await memberMutation.mutateAsync({
           groupId: selectedGroup.ProjectGroupID,
           action: 'add',
           studentId: values.studentId,
-          cgpa: student?.CGPA ? Number(student.CGPA) : undefined,
+          cgpa: values.cgpa,
         });
         message.success('Member added to group successfully');
         memberForm.resetFields();
-        const { data } = await refetch();
-        const updated = data?.find((g: ProjectGroup) => g.ProjectGroupID === selectedGroup.ProjectGroupID);
-        if (updated) setSelectedGroup(updated);
-        refetchAvailable();
+        refetch();
       }
     } catch (error) {
       if ((error as Error).message) {
@@ -184,10 +181,7 @@ export default function GroupsPage() {
           studentId,
         });
         message.success('Member removed from group successfully');
-        const { data } = await refetch();
-        const updated = data?.find((g: ProjectGroup) => g.ProjectGroupID === selectedGroup.ProjectGroupID);
-        if (updated) setSelectedGroup(updated);
-        refetchAvailable();
+        refetch();
       } catch (error) {
         message.error((error as Error).message || 'Failed to remove member');
       }
@@ -203,9 +197,7 @@ export default function GroupsPage() {
           studentId,
         });
         message.success('Member set as leader of group successfully');
-        const { data } = await refetch();
-        const updated = data?.find((g: ProjectGroup) => g.ProjectGroupID === selectedGroup.ProjectGroupID);
-        if (updated) setSelectedGroup(updated);
+        refetch();
       } catch (error) {
         message.error((error as Error).message || 'Failed to set leader');
       }
@@ -228,7 +220,7 @@ export default function GroupsPage() {
       title: 'Type',
       key: 'type',
       render: (_, record) => (
-        <Tag color="purple" style={{ borderRadius: 12 }}>
+        <Tag color="blue" style={{ borderRadius: 12 }}>
           {record.ProjectType?.ProjectTypeName}
         </Tag>
       ),
@@ -333,7 +325,7 @@ export default function GroupsPage() {
                 title="Total Members"
                 value={stats.totalMembers}
                 icon={<TeamOutlined />}
-                color="#764ba2"
+                color="#007BFF"
               />
             </Col>
             <Col xs={24} sm={8}>
@@ -454,30 +446,31 @@ export default function GroupsPage() {
                 border: 'none'
               }}
             >
-              <Form form={memberForm}>
-                <Flex gap={12} align="flex-start">
-                  <Form.Item
-                    name="studentId"
-                    rules={[{ required: true, message: 'Select student' }]}
-                    style={{ flex: 1, marginBottom: 0 }}
-                  >
-                    <Select placeholder="Select student" showSearch optionFilterProp="children">
-                      {availableStudents?.map((s) => (
-                        <Select.Option key={s.StudentID} value={s.StudentID}>
-                          {s.StudentName}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                  <Button
-                    type="primary"
-                    icon={<UserAddOutlined />}
-                    onClick={handleAddMember}
-                    loading={memberMutation.isPending}
-                  >
-                    Add
-                  </Button>
-                </Flex>
+              <Form form={memberForm} layout="inline">
+                <Form.Item
+                  name="studentId"
+                  rules={[{ required: true, message: 'Select student' }]}
+                  style={{ flex: 1 }}
+                >
+                  <Select placeholder="Select student" showSearch optionFilterProp="children">
+                    {availableStudents?.map((s) => (
+                      <Select.Option key={s.StudentID} value={s.StudentID}>
+                        {s.StudentName}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+                <Form.Item name="cgpa">
+                  <InputNumber placeholder="CGPA" min={0} max={10} step={0.01} />
+                </Form.Item>
+                <Button
+                  type="primary"
+                  icon={<UserAddOutlined />}
+                  onClick={handleAddMember}
+                  loading={memberMutation.isPending}
+                >
+                  Add
+                </Button>
               </Form>
             </Card>
 

@@ -34,9 +34,9 @@ const variantStyles: Record<string, { gradient: string; iconBg: string; iconColo
     iconColor: 'text-emerald-600',
   },
   purple: {
-    gradient: 'from-purple-500/20 via-purple-500/5 to-transparent',
-    iconBg: 'bg-purple-100',
-    iconColor: 'text-purple-600',
+    gradient: 'from-blue-500/20 via-blue-500/5 to-transparent',
+    iconBg: 'bg-blue-100',
+    iconColor: 'text-blue-600',
   },
   orange: {
     gradient: 'from-orange-500/20 via-orange-500/5 to-transparent',
@@ -58,8 +58,8 @@ const variantStyles: Record<string, { gradient: string; iconBg: string; iconColo
 // Map color prop to variant if provided
 const colorToVariant = (color?: string): string => {
   if (!color) return 'blue';
-  if (color.includes('667eea') || color === '#667eea' || color.includes('6366f1')) return 'purple';
-  if (color.includes('764ba2')) return 'purple';
+  if (color.includes('667eea') || color === '#667eea' || color.includes('6366f1')) return 'blue';
+  if (color.includes('764ba2')) return 'blue';
   if (color.includes('52c41a') || color.includes('green')) return 'green';
   if (color.includes('faad14') || color.includes('orange')) return 'orange';
   if (color.includes('cyan') || color.includes('13c2c2')) return 'cyan';
@@ -122,7 +122,7 @@ export default function StatCard({
           <div
             className="absolute -bottom-6 -left-6 w-24 h-24 rounded-full opacity-20"
             style={{
-              background: color || '#667eea',
+              background: color || '#007BFF',
               filter: 'blur(30px)'
             }}
           />

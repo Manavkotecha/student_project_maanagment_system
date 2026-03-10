@@ -44,9 +44,23 @@ model ProjectGroup {
   ProjectType                               ProjectType          @relation(fields: [ProjectTypeID], references: [ProjectTypeID], onUpdate: NoAction)
   ProjectGroupMember                        ProjectGroupMember[]
   ProjectMeeting                            ProjectMeeting[]
+  GroupMessage                              GroupMessage[]
 
   @@index([ConvenerStaffID], map: "idx_projectgroup_convener")
   @@index([ProjectTypeID], map: "idx_projectgroup_type")
+}
+
+model GroupMessage {
+  MessageID      Int          @id @default(autoincrement())
+  ProjectGroupID Int
+  SenderEmail    String       @db.VarChar(255)
+  SenderName     String       @db.VarChar(255)
+  SenderRole     String       @db.VarChar(50)
+  Content        String
+  CreatedAt      DateTime     @default(now()) @db.Timestamptz(6)
+  ProjectGroup   ProjectGroup @relation(fields: [ProjectGroupID], references: [ProjectGroupID], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([ProjectGroupID, CreatedAt], map: "idx_groupmsg_group_time")
 }
 
 model ProjectGroupMember {
@@ -150,7 +164,6 @@ model Student {
   StudentName              String                     @db.VarChar(255)
   Phone                    String?                    @db.VarChar(20)
   Email                    String?                    @unique @db.VarChar(255)
-  CGPA                     Decimal?                   @db.Decimal(4, 2)
   Description              String?
   Created                  DateTime?                  @default(now()) @db.Timestamptz(6)
   Modified                 DateTime?                  @default(now()) @db.Timestamptz(6)

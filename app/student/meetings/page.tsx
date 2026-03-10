@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useMemo } from 'react';
-import { Card, Typography, Table, Tag, Tabs, Empty, Spin, Badge, Row, Col, Space } from 'antd';
+import React, { useMemo, useState, useEffect } from 'react';
+import { Card, Typography, Table, Tag, Tabs, Empty, Spin, Badge, Row, Col, Space, Divider } from 'antd';
 import { CalendarOutlined, ClockCircleOutlined, CheckCircleOutlined, EnvironmentOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
+import dayjs from 'dayjs';
 import { motion } from 'framer-motion';
 import AppLayout from '@/components/layout/AppLayout';
 import PageHeader from '@/components/ui/PageHeader';
@@ -12,16 +13,13 @@ import { useAuth } from '@/hooks/useAuth';
 import { useStudents } from '@/hooks/useStudents';
 import { useMeetings } from '@/hooks/useMeetings';
 import type { ProjectMeeting } from '@/app/types';
-import { formatDateTime, getMeetingStatusColor } from '@/app/lib/utils';
+import { getMeetingStatusColor } from '@/app/lib/utils';
 
 const { Text } = Typography;
 
 const containerVariants = {
   hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1 },
-  },
+  visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
 };
 
 const itemVariants = {
@@ -29,17 +27,106 @@ const itemVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
 };
 
+// ── Mobile Meeting Card ───────────────────────────────────────────────────────
+
+function StudentMeetingCard({
+  record,
+  studentId,
+}: {
+  record: ProjectMeeting;
+  studentId?: number;
+}) {
+  const myAttendance = record.ProjectMeetingAttendance?.find(
+    (a) => a.StudentID === studentId
+  );
+
+  return (
+    <Card
+      size="small"
+      style={{ borderRadius: 14, marginBottom: 12, border: '1px solid #e8ecf3' }}
+      styles={{ body: { padding: '14px 16px' } }}
+    >
+      {/* Group + Status */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+        <div>
+          <Text strong style={{ fontSize: 14, color: '#1e293b' }}>
+            {record.ProjectGroup?.ProjectGroupName}
+          </Text>
+          <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 2 }}>
+            {record.ProjectGroup?.ProjectTitle}
+          </div>
+        </div>
+        <Tag color={getMeetingStatusColor(record.MeetingStatus)} style={{ borderRadius: 10, margin: 0 }}>
+          {record.MeetingStatus}
+        </Tag>
+      </div>
+
+      {/* Date row */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, fontSize: 13, color: '#475569' }}>
+        <CalendarOutlined style={{ color: '#667eea' }} />
+        <span style={{ fontWeight: 500 }}>{dayjs(record.MeetingDateTime).format('DD MMM YYYY')}</span>
+        <span style={{ color: '#94a3b8' }}>·</span>
+        <ClockCircleOutlined style={{ color: '#94a3b8', fontSize: 12 }} />
+        <span style={{ fontSize: 12, color: '#64748b' }}>{dayjs(record.MeetingDateTime).format('hh:mm A')}</span>
+      </div>
+
+      {/* Purpose */}
+      {record.MeetingPurpose && (
+        <div style={{ fontSize: 13, color: '#475569', marginBottom: 6 }}>
+          <Text type="secondary" style={{ fontSize: 11 }}>Purpose: </Text>
+          {record.MeetingPurpose}
+        </div>
+      )}
+
+      {/* Location */}
+      {record.MeetingLocation && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#475569', marginBottom: 6 }}>
+          <EnvironmentOutlined style={{ color: '#52c41a' }} />
+          <span>{record.MeetingLocation}</span>
+        </div>
+      )}
+
+      <Divider style={{ margin: '10px 0' }} />
+
+      {/* Attendance row */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Text type="secondary" style={{ fontSize: 12 }}>My Attendance</Text>
+        {!myAttendance ? (
+          <Tag style={{ borderRadius: 10, margin: 0 }}>N/A</Tag>
+        ) : myAttendance.IsPresent ? (
+          <Tag color="success" style={{ borderRadius: 10, margin: 0 }}>✓ Present</Tag>
+        ) : (
+          <Tag color="error" style={{ borderRadius: 10, margin: 0 }}>✗ Absent</Tag>
+        )}
+      </div>
+      {myAttendance?.AttendanceRemarks && (
+        <div style={{ marginTop: 6, fontSize: 12, color: '#94a3b8' }}>
+          Remarks: {myAttendance.AttendanceRemarks}
+        </div>
+      )}
+    </Card>
+  );
+}
+
+// ── Main Page ─────────────────────────────────────────────────────────────────
+
 export default function StudentMeetingsPage() {
   const { user } = useAuth();
   const { data: students, isLoading: studentsLoading } = useStudents();
   const { data: meetings, isLoading: meetingsLoading } = useMeetings();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
 
   const currentStudent = students?.find((s) => s.Email === user?.email);
   const myGroupIds = currentStudent?.ProjectGroupMember?.map((m) => m.ProjectGroup.ProjectGroupID) || [];
-  
-  const myMeetings = meetings?.filter(
-    (m) => myGroupIds.includes(m.ProjectGroupID)
-  ) || [];
+
+  const myMeetings = meetings?.filter((m) => myGroupIds.includes(m.ProjectGroupID)) || [];
 
   const upcomingMeetings = myMeetings.filter(
     (m) => new Date(m.MeetingDateTime) >= new Date()
@@ -49,7 +136,6 @@ export default function StudentMeetingsPage() {
     (m) => new Date(m.MeetingDateTime) < new Date()
   );
 
-  // Stats
   const stats = useMemo(() => {
     const attended = myMeetings.filter((m) => {
       const myAttendance = m.ProjectMeetingAttendance?.find(
@@ -57,10 +143,10 @@ export default function StudentMeetingsPage() {
       );
       return myAttendance?.IsPresent;
     }).length;
-    return { 
-      total: myMeetings.length, 
-      upcoming: upcomingMeetings.length, 
-      attended 
+    return {
+      total: myMeetings.length,
+      upcoming: upcomingMeetings.length,
+      attended,
     };
   }, [myMeetings, upcomingMeetings, currentStudent]);
 
@@ -68,7 +154,7 @@ export default function StudentMeetingsPage() {
 
   const columns: ColumnsType<ProjectMeeting> = [
     {
-      title: 'Group',
+      title: 'Group & Project',
       key: 'group',
       render: (_, record) => (
         <div>
@@ -84,10 +170,16 @@ export default function StudentMeetingsPage() {
       dataIndex: 'MeetingDateTime',
       key: 'datetime',
       render: (date) => (
-        <Space>
-          <CalendarOutlined style={{ color: '#667eea' }} />
-          {formatDateTime(date)}
-        </Space>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <CalendarOutlined style={{ color: '#667eea' }} />
+            <span style={{ fontWeight: 500 }}>{dayjs(date).format('DD MMM YYYY')}</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2, fontSize: 12, color: '#64748b' }}>
+            <ClockCircleOutlined />
+            <span>{dayjs(date).format('hh:mm A')}</span>
+          </div>
+        </div>
       ),
       sorter: (a, b) => new Date(a.MeetingDateTime).getTime() - new Date(b.MeetingDateTime).getTime(),
     },
@@ -161,11 +253,7 @@ export default function StudentMeetingsPage() {
 
   return (
     <AppLayout>
-      <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-      >
+      <motion.div initial="hidden" animate="visible" variants={containerVariants}>
         <motion.div variants={itemVariants}>
           <PageHeader
             title="My Meetings"
@@ -218,21 +306,33 @@ export default function StudentMeetingsPage() {
                     <span>
                       <ClockCircleOutlined style={{ marginRight: 8 }} />
                       Upcoming
-                      <Badge 
-                        count={upcomingMeetings.length} 
-                        style={{ marginLeft: 8, backgroundColor: '#667eea' }} 
+                      <Badge
+                        count={upcomingMeetings.length}
+                        style={{ marginLeft: 8, backgroundColor: '#667eea' }}
                       />
                     </span>
                   ),
-                  children: upcomingMeetings.length === 0 ? (
-                    <Empty description="No upcoming meetings" style={{ padding: 48 }} />
+                  children: isMobile ? (
+                    <div style={{ padding: '8px 0' }}>
+                      {upcomingMeetings.length === 0
+                        ? <Empty description="No upcoming meetings" style={{ padding: 48 }} />
+                        : upcomingMeetings.map((r) => (
+                            <StudentMeetingCard key={r.ProjectMeetingID} record={r} studentId={currentStudent?.StudentID} />
+                          ))
+                      }
+                    </div>
                   ) : (
-                    <Table<ProjectMeeting>
-                      columns={columns}
-                      dataSource={upcomingMeetings}
-                      rowKey="ProjectMeetingID"
-                      pagination={{ pageSize: 10 }}
-                    />
+                    upcomingMeetings.length === 0 ? (
+                      <Empty description="No upcoming meetings" style={{ padding: 48 }} />
+                    ) : (
+                      <Table<ProjectMeeting>
+                        columns={columns}
+                        dataSource={upcomingMeetings}
+                        rowKey="ProjectMeetingID"
+                        pagination={{ pageSize: 10 }}
+                        scroll={{ x: true }}
+                      />
+                    )
                   ),
                 },
                 {
@@ -241,21 +341,33 @@ export default function StudentMeetingsPage() {
                     <span>
                       <CheckCircleOutlined style={{ marginRight: 8 }} />
                       Past
-                      <Badge 
-                        count={pastMeetings.length} 
-                        style={{ marginLeft: 8, backgroundColor: '#8c8c8c' }} 
+                      <Badge
+                        count={pastMeetings.length}
+                        style={{ marginLeft: 8, backgroundColor: '#8c8c8c' }}
                       />
                     </span>
                   ),
-                  children: pastMeetings.length === 0 ? (
-                    <Empty description="No past meetings" style={{ padding: 48 }} />
+                  children: isMobile ? (
+                    <div style={{ padding: '8px 0' }}>
+                      {pastMeetings.length === 0
+                        ? <Empty description="No past meetings" style={{ padding: 48 }} />
+                        : pastMeetings.map((r) => (
+                            <StudentMeetingCard key={r.ProjectMeetingID} record={r} studentId={currentStudent?.StudentID} />
+                          ))
+                      }
+                    </div>
                   ) : (
-                    <Table<ProjectMeeting>
-                      columns={columns}
-                      dataSource={pastMeetings}
-                      rowKey="ProjectMeetingID"
-                      pagination={{ pageSize: 10 }}
-                    />
+                    pastMeetings.length === 0 ? (
+                      <Empty description="No past meetings" style={{ padding: 48 }} />
+                    ) : (
+                      <Table<ProjectMeeting>
+                        columns={columns}
+                        dataSource={pastMeetings}
+                        rowKey="ProjectMeetingID"
+                        pagination={{ pageSize: 10 }}
+                        scroll={{ x: true }}
+                      />
+                    )
                   ),
                 },
               ]}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { App } from 'antd';
+import { message } from 'antd';
 import type { Student, CreateStudentInput } from '@/app/types';
 
 const QUERY_KEY = 'students';
@@ -79,7 +79,6 @@ export function useStudent(id: number) {
 
 export function useCreateStudent() {
     const queryClient = useQueryClient();
-    const { message } = App.useApp();
 
     return useMutation({
         mutationFn: createStudent,
@@ -95,7 +94,6 @@ export function useCreateStudent() {
 
 export function useUpdateStudent() {
     const queryClient = useQueryClient();
-    const { message } = App.useApp();
 
     return useMutation({
         mutationFn: updateStudent,
@@ -111,7 +109,6 @@ export function useUpdateStudent() {
 
 export function useDeleteStudent() {
     const queryClient = useQueryClient();
-    const { message } = App.useApp();
 
     return useMutation({
         mutationFn: deleteStudent,
