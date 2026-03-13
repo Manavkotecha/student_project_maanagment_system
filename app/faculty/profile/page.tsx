@@ -5,6 +5,7 @@ import {
     Card, Form, Input, Button, Typography, Spin,
     Avatar, Row, Col, Divider, Tag, App,
 } from 'antd';
+import { Variants } from "framer-motion";
 import {
     UserOutlined, MailOutlined, PhoneOutlined, SaveOutlined,
     EditOutlined, CloseOutlined, TeamOutlined, CalendarOutlined,
@@ -34,7 +35,7 @@ const containerVariants = {
 
 const itemVariants = {
     hidden: { opacity: 0, y: 16 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' as const } },
 };
 
 /* ── small helper ── */
