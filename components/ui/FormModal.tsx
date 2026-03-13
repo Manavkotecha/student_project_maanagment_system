@@ -24,9 +24,10 @@ export default function FormModal<T = Record<string, unknown>>({
     try {
       const values = await form.validateFields();
       await onSubmit(values);
-    } catch (error) {
-      // Form validation failed, errors will be shown on fields
-      console.error('Validation failed:', error);
+    } catch (error: any) {
+      if (!error || !error.errorFields) {
+        console.error('Validation failed:', error);
+      }
     }
   };
 
@@ -38,10 +39,10 @@ export default function FormModal<T = Record<string, unknown>>({
   return (
     <Modal
       {...modalProps}
+      destroyOnHidden={false}
       onOk={handleOk}
       onCancel={handleCancel}
       confirmLoading={loading}
-      destroyOnHidden
       maskClosable={false}
       centered
       styles={{
@@ -57,6 +58,7 @@ export default function FormModal<T = Record<string, unknown>>({
           form={form}
           layout="vertical"
           autoComplete="off"
+          preserve
           {...formProps}
           style={{ marginTop: 16, ...formProps?.style }}
         >

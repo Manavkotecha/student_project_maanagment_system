@@ -124,16 +124,40 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
             return errorResponse('Invalid project type ID', 400);
         }
 
-        // Check if project type is in use
-        const groupCount = await prisma.projectGroup.count({
+        // Cascade delete: remove all associated project groups and their dependencies
+        const groups = await prisma.projectGroup.findMany({
             where: { ProjectTypeID: projectTypeId },
+            select: { ProjectGroupID: true },
         });
 
-        if (groupCount > 0) {
-            return errorResponse(
-                `Cannot delete: This project type is used by ${groupCount} group(s)`,
-                400
-            );
+        if (groups.length > 0) {
+            const groupIds = groups.map(g => g.ProjectGroupID);
+
+            // Delete meeting attendance for meetings in these groups
+            const meetingIds = await prisma.projectMeeting.findMany({
+                where: { ProjectGroupID: { in: groupIds } },
+                select: { ProjectMeetingID: true },
+            });
+            if (meetingIds.length > 0) {
+                await prisma.projectMeetingAttendance.deleteMany({
+                    where: { ProjectMeetingID: { in: meetingIds.map(m => m.ProjectMeetingID) } },
+                });
+            }
+
+            // Delete meetings in these groups
+            await prisma.projectMeeting.deleteMany({
+                where: { ProjectGroupID: { in: groupIds } },
+            });
+
+            // Delete group members
+            await prisma.projectGroupMember.deleteMany({
+                where: { ProjectGroupID: { in: groupIds } },
+            });
+
+            // Delete the project groups
+            await prisma.projectGroup.deleteMany({
+                where: { ProjectTypeID: projectTypeId },
+            });
         }
 
         await prisma.projectType.delete({

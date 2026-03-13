@@ -61,13 +61,12 @@ function LoginPageInner() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: '#f8fafc', // Clean light gray/white background
+        background: '#f8fafc',
         position: 'relative',
         overflow: 'hidden',
         padding: 24,
       }}
     >
-      {/* Animated background elements (adapted for light theme) */}
       <div
         style={{
           position: 'absolute',

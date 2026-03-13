@@ -174,10 +174,6 @@ export default function StaffPage() {
       key: 'actions',
       width: 120,
       render: (_, record) => {
-        const hasAssignments =
-          (record._count?.ProjectGroup_ProjectGroup_ConvenerStaffIDToStaff || 0) > 0 ||
-          (record._count?.ProjectMeeting || 0) > 0;
-
         return (
           <Space size="small">
             <Button
@@ -188,7 +184,7 @@ export default function StaffPage() {
             />
             <Popconfirm
               title="Delete staff member?"
-              description="This action cannot be undone."
+              description="This will also remove their project and meeting assignments. This action cannot be undone."
               onConfirm={() => handleDelete(record.StaffID)}
               okText="Delete"
               cancelText="Cancel"
@@ -198,7 +194,6 @@ export default function StaffPage() {
                 type="text"
                 danger
                 icon={<DeleteOutlined />}
-                disabled={hasAssignments}
               />
             </Popconfirm>
           </Space>

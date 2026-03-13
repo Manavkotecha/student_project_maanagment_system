@@ -1,7 +1,6 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { message } from 'antd';
 import type { Student, CreateStudentInput } from '@/app/types';
 
 const QUERY_KEY = 'students';
@@ -84,10 +83,6 @@ export function useCreateStudent() {
         mutationFn: createStudent,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
-            message.success('Student created successfully');
-        },
-        onError: (error: Error) => {
-            message.error(error.message || 'Failed to create student');
         },
     });
 }
@@ -99,10 +94,6 @@ export function useUpdateStudent() {
         mutationFn: updateStudent,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
-            message.success('Student updated successfully');
-        },
-        onError: (error: Error) => {
-            message.error(error.message || 'Failed to update student');
         },
     });
 }
@@ -114,10 +105,6 @@ export function useDeleteStudent() {
         mutationFn: deleteStudent,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
-            message.success('Student deleted successfully');
-        },
-        onError: (error: Error) => {
-            message.error(error.message || 'Failed to delete student');
         },
     });
 }

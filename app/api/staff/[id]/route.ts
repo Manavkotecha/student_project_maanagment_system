@@ -83,15 +83,24 @@ export async function PUT(request: NextRequest, context: RouteContext) {
             return errorResponse('Unauthorized', 401);
         }
 
-        if (session.user?.role?.toLowerCase() !== 'admin') {
-            return errorResponse('Forbidden: Admin access required', 403);
-        }
-
         const { id } = await context.params;
         const staffId = parseInt(id, 10);
 
         if (isNaN(staffId)) {
             return errorResponse('Invalid staff ID', 400);
+        }
+
+        // Allow admin to update any staff, or faculty to update their own profile
+        const isAdmin = session.user?.role?.toLowerCase() === 'admin';
+        if (!isAdmin) {
+            // Check if the faculty is updating their own profile
+            const ownStaff = await prisma.staff.findUnique({
+                where: { StaffID: staffId },
+                select: { Email: true },
+            });
+            if (!ownStaff || ownStaff.Email !== session.user?.email) {
+                return errorResponse('Forbidden: You can only update your own profile', 403);
+            }
         }
 
         const body = await request.json();
@@ -168,26 +177,31 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
             return errorResponse('Invalid staff ID', 400);
         }
 
-        // Check if staff is assigned to any projects or meetings
-        const assignmentsCount = await prisma.projectGroup.count({
-            where: {
-                OR: [
-                    { ConvenerStaffID: staffId },
-                    { ExpertStaffID: staffId },
-                ],
-            },
+        // Remove staff references from project groups
+        await prisma.projectGroup.updateMany({
+            where: { ConvenerStaffID: staffId },
+            data: { ConvenerStaffID: null },
+        });
+        await prisma.projectGroup.updateMany({
+            where: { ExpertStaffID: staffId },
+            data: { ExpertStaffID: null },
         });
 
-        const meetingsCount = await prisma.projectMeeting.count({
+        // Delete meeting attendance for meetings guided by this staff
+        const meetingIds = await prisma.projectMeeting.findMany({
+            where: { GuideStaffID: staffId },
+            select: { ProjectMeetingID: true },
+        });
+        if (meetingIds.length > 0) {
+            await prisma.projectMeetingAttendance.deleteMany({
+                where: { ProjectMeetingID: { in: meetingIds.map(m => m.ProjectMeetingID) } },
+            });
+        }
+
+        // Delete meetings guided by this staff
+        await prisma.projectMeeting.deleteMany({
             where: { GuideStaffID: staffId },
         });
-
-        if (assignmentsCount > 0 || meetingsCount > 0) {
-            return errorResponse(
-                `Cannot delete: Staff is assigned to ${assignmentsCount} project(s) and ${meetingsCount} meeting(s)`,
-                400
-            );
-        }
 
         await prisma.staff.delete({
             where: { StaffID: staffId },

@@ -207,11 +207,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
         router.push(profilePath);
       },
     },
-    {
-      key: 'settings',
-      icon: <Settings size={16} />,
-      label: 'Settings',
-    },
+
     {
       type: 'divider',
     },

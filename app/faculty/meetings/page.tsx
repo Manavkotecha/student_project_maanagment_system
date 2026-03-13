@@ -608,7 +608,8 @@ export default function FacultyMeetingsPage() {
             style={{ width: '100%' }}
             disabledDate={disablePastDates}
             placeholder="Select date and time"
-            getPopupContainer={(trigger) => trigger.closest('.ant-modal-body') as HTMLElement || document.body}
+            needConfirm={false}
+            getPopupContainer={() => document.body}
           />
         </Form.Item>
 

@@ -209,6 +209,7 @@ export default function StudentProfilePage() {
 
           {/* ── Right Column ── */}
           <Col xs={24} lg={16}>
+            {!editing && <Form form={form} style={{ display: 'none' }} />}
             <AnimatePresence mode="wait">
               {!editing ? (
                 /* ── VIEW MODE ── */
@@ -326,11 +327,21 @@ export default function StudentProfilePage() {
                         </Col>
                       </Row>
 
-                      <Form.Item name="Phone" label={<span style={{ fontWeight: 600, color: '#374151' }}>Phone Number</span>}>
+                      <Form.Item 
+                        name="Phone" 
+                        label={<span style={{ fontWeight: 600, color: '#374151' }}>Phone Number</span>}
+                        rules={[{ pattern: /^\d{0,10}$/, message: 'Phone number must be up to 10 digits' }]}
+                      >
                         <Input
                           prefix={<PhoneOutlined style={{ color: '#007BFF' }} />}
                           placeholder="Your phone number"
                           style={{ borderRadius: 10 }}
+                          maxLength={10}
+                          onKeyPress={(event) => {
+                            if (!/[0-9]/.test(event.key)) {
+                              event.preventDefault();
+                            }
+                          }}
                         />
                       </Form.Item>
 

@@ -107,6 +107,7 @@ export default function LandingPage() {
   return (
     <div
       style={{
+        zoom: 1.1,
         minHeight: '100vh',
         overflowX: 'hidden',
         background: 'var(--bg-light)',

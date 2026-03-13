@@ -4,6 +4,7 @@ import { prisma } from '../../lib/prisma';
 import { successResponse, errorResponse } from '../../lib/utils';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '../../lib/auth';
+import bcrypt from 'bcryptjs';
 
 // Validation schema
 const createStudentSchema = z.object({
@@ -99,11 +100,17 @@ export async function POST(request: NextRequest) {
             return errorResponse('Email already exists', 400);
         }
 
+        // Generate default password: <emailPrefix>@123
+        const emailPrefix = validation.data.Email.split('@')[0];
+        const defaultPassword = `${emailPrefix}@123`;
+        const hashedPassword = await bcrypt.hash(defaultPassword, 10);
+
         const student = await prisma.student.create({
             data: {
                 StudentName: validation.data.StudentName,
                 Phone: validation.data.Phone || null,
                 Email: validation.data.Email,
+                Password: hashedPassword,
                 Description: validation.data.Description || null,
             },
         });

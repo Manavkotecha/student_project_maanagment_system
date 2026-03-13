@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Button,
   Form,
@@ -82,6 +82,25 @@ export default function GroupsPage() {
   const deleteMutation = useDeleteGroup();
   const memberMutation = useManageMember();
 
+  // Keep selectedGroup in sync when groups get refetched
+  useEffect(() => {
+    if (selectedGroup && groups) {
+      const updatedGroup = groups.find((g: ProjectGroup) => g.ProjectGroupID === selectedGroup.ProjectGroupID);
+      if (updatedGroup) {
+        setSelectedGroup(updatedGroup);
+      }
+    }
+  }, [groups, selectedGroup?.ProjectGroupID]);
+
+  // Exclude students who are already part of the selected group
+  const filteredStudents = useMemo(() => {
+    if (!availableStudents) return [];
+    if (!selectedGroup) return availableStudents;
+    
+    const existingMemberIds = new Set(selectedGroup.ProjectGroupMember?.map(m => m.StudentID) || []);
+    return availableStudents.filter(s => !existingMemberIds.has(s.StudentID));
+  }, [availableStudents, selectedGroup]);
+
   // Calculate stats
   const stats = useMemo(() => {
     if (!groups) return { total: 0, totalMembers: 0, avgCPI: 0 };
@@ -159,7 +178,7 @@ export default function GroupsPage() {
           groupId: selectedGroup.ProjectGroupID,
           action: 'add',
           studentId: values.studentId,
-          cgpa: values.cgpa,
+          cgpa: values.cgpa ? parseFloat(values.cgpa as string) : undefined,
         });
         message.success('Member added to group successfully');
         memberForm.resetFields();
@@ -402,17 +421,15 @@ export default function GroupsPage() {
         </Form.Item>
         <Divider>Staff Assignment</Divider>
         <Form.Item name="GuideStaffName" label="Guide Name">
-          <Input placeholder="Guide staff name" />
-        </Form.Item>
-        <Form.Item name="ConvenerStaffID" label="Convener">
-          <Select placeholder="Select convener" allowClear>
+          <Select placeholder="Select guide" allowClear showSearch optionFilterProp="children">
             {staff?.map((s) => (
-              <Select.Option key={s.StaffID} value={s.StaffID}>
+              <Select.Option key={s.StaffID} value={s.StaffName}>
                 {s.StaffName}
               </Select.Option>
             ))}
           </Select>
         </Form.Item>
+
         <Form.Item name="ExpertStaffID" label="Expert">
           <Select placeholder="Select expert" allowClear>
             {staff?.map((s) => (
@@ -446,22 +463,40 @@ export default function GroupsPage() {
                 border: 'none'
               }}
             >
-              <Form form={memberForm} layout="inline">
+              <Form form={memberForm} layout="inline" style={{ gap: '12px', alignItems: 'flex-start' }}>
                 <Form.Item
                   name="studentId"
                   rules={[{ required: true, message: 'Select student' }]}
-                  style={{ flex: 1 }}
+                  style={{ flex: 1, margin: 0 }}
                 >
                   <Select placeholder="Select student" showSearch optionFilterProp="children">
-                    {availableStudents?.map((s) => (
+                    {filteredStudents?.map((s) => (
                       <Select.Option key={s.StudentID} value={s.StudentID}>
                         {s.StudentName}
                       </Select.Option>
                     ))}
                   </Select>
                 </Form.Item>
-                <Form.Item name="cgpa">
-                  <InputNumber placeholder="CGPA" min={0} max={10} step={0.01} />
+                <Form.Item 
+                  name="cgpa" 
+                  style={{ margin: 0 }}
+                  normalize={(value, prevValue, prevValues) => {
+                    if (!value) return value;
+                    const regex = /^\d*\.?\d{0,2}$/;
+                    if (regex.test(value)) {
+                      // Check max value
+                      const num = parseFloat(value);
+                      if (num > 10) return '10';
+                      if (num < 0) return '0';
+                      return value;
+                    }
+                    return prevValue;
+                  }}
+                >
+                  <Input
+                    placeholder="CGPA"
+                    maxLength={5}
+                  />
                 </Form.Item>
                 <Button
                   type="primary"

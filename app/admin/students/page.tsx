@@ -107,7 +107,7 @@ export default function StudentsPage() {
           <Avatar
             size={40}
             style={{
-              background: 'linear-gradient(135deg, #52c41a 0%, #1890ff 100%)',
+              background: 'linear-gradient(135deg, #007BFF 0%, #0056b3 100%)',
               fontWeight: 600,
             }}
           >
@@ -275,8 +275,15 @@ export default function StudentsPage() {
         >
           <Input placeholder="email@example.com" />
         </Form.Item>
-        <Form.Item name="Phone" label="Phone">
-          <Input placeholder="Phone number" />
+        <Form.Item
+          name="Phone"
+          label="Phone"
+          rules={[
+            { max: 10, message: 'Phone number cannot exceed 10 digits' },
+            { pattern: /^\d{0,10}$/, message: 'Please enter a valid 10-digit phone number' },
+          ]}
+        >
+          <Input placeholder="Phone number" maxLength={10} />
         </Form.Item>
         <Form.Item name="Description" label="Description">
           <Input.TextArea rows={3} placeholder="Optional notes" />
