@@ -7,9 +7,9 @@ import { motion } from 'framer-motion';
 import { useSession } from 'next-auth/react';
 import AppLayout from '@/components/layout/AppLayout';
 import PageHeader from '@/components/ui/PageHeader';
-import ChatWindow from '@/components/ui/ChatWindow';
+import StreamProvider from '@/components/stream/StreamProvider';
+import StreamChatWindow from '@/components/stream/StreamChatWindow';
 import { useStudents } from '@/hooks/useStudents';
-import { useMeetings } from '@/hooks/useMeetings';
 import { useGroups } from '@/hooks/useGroups';
 
 export default function StudentMessagesPage() {
@@ -21,7 +21,7 @@ export default function StudentMessagesPage() {
   const currentStudent = students?.find((s) => s.Email === session?.user?.email);
 
   const myGroupIds = useMemo(
-    () => currentStudent?.ProjectGroupMember?.map((m) => m.ProjectGroup.ProjectGroupID) ?? [],
+    () => currentStudent?.ProjectGroupMember?.map((m: any) => m.ProjectGroup.ProjectGroupID) ?? [],
     [currentStudent]
   );
 
@@ -85,7 +85,9 @@ export default function StudentMessagesPage() {
           {/* Chat area */}
           <div style={{ flex: 1, minWidth: 0 }}>
             {selectedGroup ? (
-              <ChatWindow groupId={selectedGroup.ProjectGroupID} groupName={selectedGroup.ProjectGroupName} />
+              <StreamProvider>
+                <StreamChatWindow groupId={selectedGroup.ProjectGroupID} groupName={selectedGroup.ProjectGroupName} />
+              </StreamProvider>
             ) : (
               <EmptyChat />
             )}
@@ -126,7 +128,7 @@ function GroupItem({ name, subtitle, active, onClick }: { name: string; subtitle
 
 function EmptyChat() {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 12, color: '#94a3b8' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#94a3b8' }}>
       <div style={{ width: 64, height: 64, borderRadius: 20, background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <MessageSquare size={28} color="#cbd5e1" />
       </div>

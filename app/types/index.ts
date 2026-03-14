@@ -31,6 +31,7 @@ export interface Student {
     Description?: string | null;
     Created?: Date | null;
     Modified?: Date | null;
+    ProjectGroupMember?: ProjectGroupMember[];
 }
 
 // Project Group

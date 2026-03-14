@@ -861,7 +861,6 @@ h6 {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #3b82f6;
-  background: #ffffff;
   border-bottom: 1px solid #e8ecf3;
   padding: 4px 0 3px;
 }
@@ -878,8 +877,83 @@ h6 {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #3b82f6;
-  background: #ffffff;
   border-bottom: 1px solid #e8ecf3;
   padding: 4px 0 3px;
 }
+
+/* ============================================
+   Stream Chat UI Customs (Edit Modal)
+   ============================================ */
+
+/* 2) EDIT MESSAGE MODAL (Fixing the floating pill and squished buttons) */
+.str-chat__edit-message-modal .str-chat__modal__inner {
+  padding: 24px !important;
+  border-radius: 16px !important;
+  width: 90% !important;
+  max-width: 500px !important;
+  background: #ffffff !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.str-chat__edit-message-modal .str-chat__modal__inner::before {
+  content: 'Edit Message';
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  color: #1e293b;
+}
+
+/* Hide attachment (+) icon strictly within Edit form */
+.str-chat__edit-message-form .str-chat__attachment-selector {
+  display: none !important;
+}
+
+/* Ensure outer elements don't squeeze */
+.str-chat__edit-message-form {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+}
+
+/* Fix the squished "CancelSEND" action row */
+.str-chat__edit-message-form-options {
+  display: flex !important;
+  justify-content: flex-end !important;
+  gap: 12px !important;
+  margin-top: 20px !important;
+}
+
+.str-chat__edit-message-cancel {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+  border: none !important;
+  padding: 10px 20px !important;
+  border-radius: 8px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+}
+
+.str-chat__edit-message-cancel:hover {
+  background: #e2e8f0 !important;
+}
+
+.str-chat__edit-message-send {
+  background: #3b82f6 !important;
+  color: #ffffff !important;
+  border: none !important;
+  padding: 10px 20px !important;
+  border-radius: 8px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+}
+
+.str-chat__edit-message-send:hover {
+  background: #2563eb !important;
+}
+

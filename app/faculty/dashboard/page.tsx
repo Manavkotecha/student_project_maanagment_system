@@ -28,8 +28,9 @@ const { Text } = Typography;
 export default function FacultyDashboard() {
   const { user } = useAuth();
 
-  // For demo, we'll use staffId = 1 or from session
-  const staffId = 1; // TODO: Get from session
+  // Get real ID from session safely
+  const parsedId = parseInt(user?.id || '0', 10);
+  const staffId = isNaN(parsedId) ? 0 : parsedId;
 
   const { data: meetings, isLoading: meetingsLoading } = useMeetings({ staffId });
   const { data: groups, isLoading: groupsLoading } = useGroups({ staffId });
@@ -115,75 +116,6 @@ export default function FacultyDashboard() {
 
       {/* Main Content */}
       <Row gutter={[28, 28]}>
-        {/* Upcoming Meetings */}
-        <Col xs={24} lg={12}>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-          >
-            <Card
-              title={
-                <div className="flex items-center gap-2">
-                  <Calendar size={18} className="text-blue-600" />
-                  <span className="font-semibold">Upcoming Meetings</span>
-                </div>
-              }
-              extra={
-                <Link href="/faculty/meetings" className="text-blue-600 hover:text-blue-700 flex items-center gap-1 text-sm">
-                  View All <ArrowRight size={14} />
-                </Link>
-              }
-              style={{ borderRadius: 16, border: '1px solid #e2e8f0' }}
-            >
-              {upcomingMeetings.length === 0 ? (
-                <Empty
-                  description="No upcoming meetings"
-                  image={Empty.PRESENTED_IMAGE_SIMPLE}
-                />
-              ) : (
-                <div className="space-y-4">
-                  {upcomingMeetings.slice(0, 4).map((meeting, index) => (
-                    <motion.div
-                      key={meeting.ProjectMeetingID}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.3, delay: index * 0.1 }}
-                      className="p-4 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors"
-                    >
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <Text strong className="text-slate-800 block mb-1">
-                            {meeting.ProjectGroup?.ProjectGroupName}
-                          </Text>
-                          <Text className="text-slate-500 text-sm block mb-2">
-                            {meeting.MeetingPurpose}
-                          </Text>
-                          <div className="flex items-center gap-4 text-sm text-slate-500">
-                            <span className="flex items-center gap-1">
-                              <Calendar size={14} />
-                              {formatDateTime(meeting.MeetingDateTime)}
-                            </span>
-                            {meeting.MeetingLocation && (
-                              <span className="flex items-center gap-1">
-                                <MapPin size={14} />
-                                {meeting.MeetingLocation}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <Tag color={getMeetingStatusColor(meeting.MeetingStatus)}>
-                          {meeting.MeetingStatus}
-                        </Tag>
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              )}
-            </Card>
-          </motion.div>
-        </Col>
-
         {/* My Projects */}
         <Col xs={24} lg={12}>
           <motion.div
@@ -203,7 +135,8 @@ export default function FacultyDashboard() {
                   View All <ArrowRight size={14} />
                 </Link>
               }
-              style={{ borderRadius: 16, border: '1px solid #e2e8f0' }}
+              style={{ borderRadius: 16, border: '1px solid #e2e8f0', height: '100%' }}
+              styles={{ body: { display: 'flex', flexDirection: 'column', height: 'calc(100% - 58px)' } }}
             >
               {!groups || groups.length === 0 ? (
                 <Empty
@@ -219,8 +152,9 @@ export default function FacultyDashboard() {
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.3, delay: index * 0.1 }}
                       style={{
-                        padding: 20,
+                        padding: 16,
                         borderRadius: 14,
+                        marginBottom: 12,
                         background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)',
                         border: '1px solid #e2e8f0',
                         transition: 'all 0.2s ease',
@@ -229,24 +163,24 @@ export default function FacultyDashboard() {
                       className="hover:border-blue-200 hover:shadow-md"
                     >
                       {/* Header: Group Name + Project Type */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
                         <Text strong style={{ fontSize: 16, color: '#1e293b', lineHeight: '24px' }}>
                           {group.ProjectGroupName}
                         </Text>
                         {group.ProjectType && (
-                          <Tag color="blue" style={{ margin: 0, lineHeight: '20px', fontSize: 12 }}>
+                          <Tag color="blue" style={{ margin: 0, marginLeft: 8, lineHeight: '20px', fontSize: 12 }}>
                             {group.ProjectType.ProjectTypeName}
                           </Tag>
                         )}
                       </div>
 
                       {/* Project Title */}
-                      <Text style={{ color: '#64748b', fontSize: 14, display: 'block', marginBottom: 14, lineHeight: '20px' }}>
+                      <Text style={{ color: '#64748b', fontSize: 13, display: 'block', marginBottom: 10, lineHeight: '18px' }}>
                         {group.ProjectTitle}
                       </Text>
 
                       {/* Separator + Team Members */}
-                      <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 12 }}>
+                      <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 10 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                           <Avatar.Group max={{ count: 3 }} size="small">
                             {group.ProjectGroupMember?.map((member: { ProjectGroupMemberID: number; Student?: { StudentName?: string } }) => (
@@ -263,6 +197,87 @@ export default function FacultyDashboard() {
                             {group.ProjectGroupMember?.length || 0} members
                           </Text>
                         </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </Card>
+          </motion.div>
+        </Col>
+
+        {/* Upcoming Meetings */}
+        <Col xs={24} lg={12}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <Card
+              title={
+                <div className="flex items-center gap-2">
+                  <Calendar size={18} className="text-blue-600" />
+                  <span className="font-semibold">Upcoming Meetings</span>
+                </div>
+              }
+              extra={
+                <Link href="/faculty/meetings" className="text-blue-600 hover:text-blue-700 flex items-center gap-1 text-sm">
+                  View All <ArrowRight size={14} />
+                </Link>
+              }
+              style={{ borderRadius: 16, border: '1px solid #e2e8f0', height: '100%' }}
+              styles={{ body: { display: 'flex', flexDirection: 'column', height: 'calc(100% - 58px)' } }}
+            >
+              {upcomingMeetings.length === 0 ? (
+                <Empty
+                  description="No upcoming meetings"
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                />
+              ) : (
+                <div className="space-y-4">
+                  {upcomingMeetings.slice(0, 4).map((meeting, index) => (
+                    <motion.div
+                      key={meeting.ProjectMeetingID}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.1 }}
+                      style={{
+                        padding: 16,
+                        borderRadius: 14,
+                        marginBottom: 12,
+                        background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)',
+                        border: '1px solid #e2e8f0',
+                        transition: 'all 0.2s ease',
+                        cursor: 'pointer',
+                      }}
+                      className="hover:border-blue-200 hover:shadow-md"
+                    >
+                      <div className="flex justify-between items-start" style={{ marginBottom: 4 }}>
+                        <div className="flex-1 pr-4">
+                          <Text strong style={{ fontSize: 16, color: '#1e293b', lineHeight: '24px', display: 'block', marginBottom: 4 }}>
+                            {meeting.ProjectGroup?.ProjectGroupName}
+                          </Text>
+                          <Text style={{ color: '#64748b', fontSize: 13, display: 'block', marginBottom: 10, lineHeight: '18px' }}>
+                            {meeting.MeetingPurpose}
+                          </Text>
+                          <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 10 }}>
+                            <div className="flex items-center gap-5 text-sm text-slate-500">
+                              <span className="flex items-center gap-1">
+                                <Calendar size={14} />
+                                {formatDateTime(meeting.MeetingDateTime)}
+                              </span>
+                              {meeting.MeetingLocation && (
+                                <span className="flex items-center gap-1">
+                                  <MapPin size={14} />
+                                  {meeting.MeetingLocation}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <Tag color={getMeetingStatusColor(meeting.MeetingStatus)}>
+                          {meeting.MeetingStatus}
+                        </Tag>
                       </div>
                     </motion.div>
                   ))}

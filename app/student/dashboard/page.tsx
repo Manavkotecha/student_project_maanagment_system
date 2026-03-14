@@ -20,7 +20,7 @@ import StatCard from '@/components/ui/StatCard';
 import PageHeader from '@/components/ui/PageHeader';
 import { useAuth } from '@/hooks/useAuth';
 import { useMeetings } from '@/hooks/useMeetings';
-import { useStudents } from '@/hooks/useStudents';
+import { useStudents, useStudent } from '@/hooks/useStudents';
 import { formatDateTime, getMeetingStatusColor } from '@/app/lib/utils';
 import Link from 'next/link';
 
@@ -29,13 +29,15 @@ const { Text } = Typography;
 export default function StudentDashboard() {
   const { user } = useAuth();
 
-  const { data: students } = useStudents();
-  const currentStudent = students?.find((s) => s.Email === user?.email);
+  // Parse the ID safely. If it's a UUID or missing, it becomes 0.
+  const studentIdToFetch = parseInt(user?.id || '0', 10);
+  const { data: currentStudent, isLoading: studentLoading } = useStudent(isNaN(studentIdToFetch) ? 0 : studentIdToFetch);
+  const { data: meetings, isLoading: meetingsLoading } = useMeetings();
 
-  const { data: meetings, isLoading } = useMeetings();
+  const isLoading = studentLoading || meetingsLoading;
 
   // Filter meetings for groups this student belongs to
-  const myGroupIds = currentStudent?.ProjectGroupMember?.map((m: { ProjectGroup: { ProjectGroupID: number } }) => m.ProjectGroup.ProjectGroupID) || [];
+  const myGroupIds = currentStudent?.ProjectGroupMember?.map((m) => m.ProjectGroupID) || [];
 
   const myMeetings = meetings?.filter(
     (m) => myGroupIds.includes(m.ProjectGroupID)
@@ -180,18 +182,9 @@ export default function StudentDashboard() {
                 />
               ) : (
                 <div className="space-y-4">
-                  {currentStudent.ProjectGroupMember.map((membership: {
-                    ProjectGroup: {
-                      ProjectGroupID: number;
-                      ProjectGroupName: string;
-                      ProjectTitle: string;
-                      ProjectType?: { ProjectTypeName: string };
-                      ProjectGroupMember?: Array<{ Student?: { StudentName?: string } }>;
-                    };
-                    IsGroupLeader?: boolean
-                  }, index: number) => (
+                  {currentStudent.ProjectGroupMember.map((membership, index) => (
                     <motion.div
-                      key={membership.ProjectGroup.ProjectGroupID}
+                      key={membership.ProjectGroupMemberID}
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.3, delay: index * 0.1 }}
@@ -208,14 +201,14 @@ export default function StudentDashboard() {
                       {/* Header: Group Name + Leader Badge */}
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
                         <Text strong style={{ fontSize: 16, color: '#1e293b', lineHeight: '24px' }}>
-                          {membership.ProjectGroup.ProjectGroupName}
+                          {membership.ProjectGroup?.ProjectGroupName || 'Unnamed Group'}
                         </Text>
                         {membership.IsGroupLeader && (
                           <Tag color="gold" style={{ margin: 0, lineHeight: '20px', display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12 }}>
                             <Award size={12} /> Leader
                           </Tag>
                         )}
-                        {membership.ProjectGroup.ProjectType && (
+                        {membership.ProjectGroup?.ProjectType && (
                           <Tag color="blue" style={{ margin: 0, lineHeight: '20px', fontSize: 12 }}>
                             {membership.ProjectGroup.ProjectType.ProjectTypeName}
                           </Tag>
@@ -224,14 +217,14 @@ export default function StudentDashboard() {
 
                       {/* Project Title */}
                       <Text style={{ color: '#64748b', fontSize: 14, display: 'block', marginBottom: 14, lineHeight: '20px' }}>
-                        {membership.ProjectGroup.ProjectTitle}
+                        {membership.ProjectGroup?.ProjectTitle || 'No Title'}
                       </Text>
 
                       {/* Separator */}
                       <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 12 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                           <Avatar.Group max={{ count: 4 }} size="small">
-                            {membership.ProjectGroup.ProjectGroupMember?.map((member, idx) => (
+                            {membership.ProjectGroup?.ProjectGroupMember?.map((member, idx) => (
                               <Avatar
                                 key={idx}
                                 className="bg-blue-500"
@@ -242,7 +235,7 @@ export default function StudentDashboard() {
                             ))}
                           </Avatar.Group>
                           <Text style={{ color: '#94a3b8', fontSize: 13, lineHeight: '18px' }}>
-                            {membership.ProjectGroup.ProjectGroupMember?.length || 0} team members
+                            {membership.ProjectGroup?.ProjectGroupMember?.length || 0} team members
                           </Text>
                         </div>
                       </div>

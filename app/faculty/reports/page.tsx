@@ -1,219 +1,242 @@
 'use client';
 
 import React, { useState } from 'react';
-import {
-  Card,
-  Typography,
-  Table,
-  Tag,
-  Select,
-  Space,
-  Button,
-  Progress,
-  Spin,
-} from 'antd';
-import { DownloadOutlined, FileExcelOutlined, FilePdfOutlined } from '@ant-design/icons';
-import type { ColumnsType } from 'antd/es/table';
+import { Form, Input, Button, Tag, Space, Modal, Row, Col, Typography, Card, App } from 'antd';
+import { FilePdfOutlined, FileExcelOutlined, FileTextOutlined, FileImageOutlined, CheckCircleOutlined, SyncOutlined, CloseCircleOutlined, EyeOutlined } from '@ant-design/icons';
+import { motion } from 'framer-motion';
 import AppLayout from '@/components/layout/AppLayout';
-import { useProjectsReport } from '@/hooks/useReports';
-import { useProjectTypes } from '@/hooks/useProjectTypes';
+import PageHeader from '@/components/ui/PageHeader';
+import DataTable from '@/components/ui/DataTable';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import axios from 'axios';
 import { formatDate } from '@/app/lib/utils';
-import * as XLSX from 'xlsx';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
 
-const { Title } = Typography;
+const { Text, Title } = Typography;
 
-interface ProjectWithProgress {
-  ProjectGroupID: number;
-  ProjectGroupName: string;
-  ProjectTitle: string;
-  ProjectArea?: string;
-  AverageCPI?: number;
-  ProjectType?: { ProjectTypeName: string };
-  Staff_ProjectGroup_ConvenerStaffIDToStaff?: { StaffName: string };
-  ProjectGroupMember?: Array<{ Student: { StudentName: string; Email: string } }>;
-  _count?: { ProjectMeeting: number };
-  completedMeetings: number;
-  progressPercent: number;
-  Created?: Date;
-}
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+};
 
 export default function FacultyReportsPage() {
-  const [projectTypeFilter, setProjectTypeFilter] = useState<number | undefined>();
-  const { data: projects, isLoading } = useProjectsReport({ projectTypeId: projectTypeFilter });
-  const { data: projectTypes } = useProjectTypes();
+  const { message } = App.useApp();
+  const queryClient = useQueryClient();
+  const [form] = Form.useForm();
+  
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [selectedReport, setSelectedReport] = useState<any>(null);
 
-  const handleExportExcel = () => {
-    if (!projects) return;
+  const { data: reports, isLoading } = useQuery({
+    queryKey: ['faculty-reports'],
+    queryFn: async () => {
+      const response = await axios.get('/api/student-reports');
+      return response.data;
+    },
+  });
 
-    const data = projects.map((p: ProjectWithProgress) => ({
-      'Group Name': p.ProjectGroupName,
-      'Project Title': p.ProjectTitle,
-      'Project Type': p.ProjectType?.ProjectTypeName || '-',
-      'Area': p.ProjectArea || '-',
-      'Members': p.ProjectGroupMember?.map((m) => m.Student.StudentName).join(', ') || '-',
-      'Total Meetings': p._count?.ProjectMeeting || 0,
-      'Completed': p.completedMeetings,
-      'Progress': `${p.progressPercent}%`,
-      'Avg CPI': p.AverageCPI ? Number(p.AverageCPI).toFixed(2) : '-',
-    }));
+  const reviewMutation = useMutation({
+    mutationFn: async ({ id, status, feedback }: { id: number; status: string; feedback: string }) => {
+      const response = await axios.patch(`/api/student-reports/${id}`, { status, feedback });
+      return response.data;
+    },
+    onSuccess: (data) => {
+      message.success(`Report marked as ${data.Status}!`);
+      setIsReviewModalOpen(false);
+      form.resetFields();
+      setSelectedReport(null);
+      queryClient.invalidateQueries({ queryKey: ['faculty-reports'] });
+    },
+    onError: (error: any) => {
+      message.error(error.response?.data?.error || 'Failed to update report status.');
+    },
+  });
 
-    const ws = XLSX.utils.json_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Projects Report');
-    XLSX.writeFile(wb, `projects_report_${new Date().toISOString().split('T')[0]}.xlsx`);
-  };
-
-  const handleExportPDF = () => {
-    if (!projects) return;
-
-    const doc = new jsPDF();
-    doc.setFontSize(18);
-    doc.text('Projects Report', 14, 22);
-    doc.setFontSize(10);
-    doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 30);
-
-    const tableData = projects.map((p: ProjectWithProgress) => [
-      p.ProjectGroupName,
-      p.ProjectTitle?.substring(0, 30) || '-',
-      p.ProjectType?.ProjectTypeName || '-',
-      p.ProjectGroupMember?.length || 0,
-      `${p.progressPercent}%`,
-    ]);
-
-    (doc as jsPDF & { autoTable: Function }).autoTable({
-      head: [['Group', 'Title', 'Type', 'Members', 'Progress']],
-      body: tableData,
-      startY: 35,
-      styles: { fontSize: 8 },
-      headStyles: { fillColor: [22, 119, 255] },
+  const handleReviewClick = (report: any) => {
+    setSelectedReport(report);
+    form.setFieldsValue({
+      feedback: report.Feedback || '',
     });
-
-    doc.save(`projects_report_${new Date().toISOString().split('T')[0]}.pdf`);
+    setIsReviewModalOpen(true);
   };
 
-  const columns: ColumnsType<ProjectWithProgress> = [
+  const handleStatusUpdate = (status: 'Approved' | 'Rejected') => {
+    if (!selectedReport) return;
+    reviewMutation.mutate({
+      id: selectedReport.ReportID,
+      status,
+      feedback: form.getFieldValue('feedback'),
+    });
+  };
+
+  const getFileIcon = (fileType: string) => {
+    const type = fileType.toLowerCase();
+    if (type.includes('pdf')) return <FilePdfOutlined style={{ color: '#ff4d4f' }} />;
+    if (type.includes('xls') || type.includes('xlsx')) return <FileExcelOutlined style={{ color: '#52c41a' }} />;
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(type)) return <FileImageOutlined style={{ color: '#eb2f96' }} />;
+    return <FileTextOutlined style={{ color: '#1890ff' }} />;
+  };
+
+  const columns = [
     {
-      title: 'Group Name',
-      dataIndex: 'ProjectGroupName',
-      key: 'name',
-      sorter: (a, b) => a.ProjectGroupName.localeCompare(b.ProjectGroupName),
-    },
-    {
-      title: 'Project Title',
-      dataIndex: 'ProjectTitle',
-      key: 'title',
-      ellipsis: true,
-    },
-    {
-      title: 'Type',
-      key: 'type',
-      render: (_, record) => (
-        <Tag color="blue">{record.ProjectType?.ProjectTypeName}</Tag>
-      ),
-    },
-    {
-      title: 'Guide',
-      key: 'guide',
-      render: (_, record) =>
-        record.Staff_ProjectGroup_ConvenerStaffIDToStaff?.StaffName || '-',
-    },
-    {
-      title: 'Members',
-      key: 'members',
-      render: (_, record) => (
-        <Space size={4} wrap>
-          {record.ProjectGroupMember?.slice(0, 3).map((m) => (
-            <Tag key={m.Student.Email}>{m.Student.StudentName}</Tag>
-          ))}
-          {(record.ProjectGroupMember?.length || 0) > 3 && (
-            <Tag>+{(record.ProjectGroupMember?.length || 0) - 3}</Tag>
-          )}
+      title: 'Report Title',
+      key: 'Title',
+      render: (_: any, record: any) => (
+        <Space>
+          <div style={{ fontSize: 20 }}>{getFileIcon(record.FileType)}</div>
+          <div>
+            <div style={{ fontWeight: 600, color: '#1e293b' }}>{record.Title}</div>
+            <div style={{ fontSize: 13, color: '#64748b' }}>
+               {record.Student?.StudentName} ({record.ProjectGroup?.ProjectGroupName})
+            </div>
+          </div>
         </Space>
       ),
     },
     {
-      title: 'Progress',
-      key: 'progress',
-      width: 150,
-      render: (_, record) => (
-        <Progress
-          percent={record.progressPercent}
-          size="small"
-          status={record.progressPercent === 100 ? 'success' : 'active'}
-        />
-      ),
+      title: 'Submitted On',
+      dataIndex: 'Created',
+      key: 'Created',
+      render: (date: string) => formatDate(date),
     },
     {
-      title: 'Meetings',
-      key: 'meetings',
-      render: (_, record) => (
-        <Tag color="blue">
-          {record.completedMeetings}/{record._count?.ProjectMeeting || 0}
-        </Tag>
-      ),
+      title: 'Status',
+      dataIndex: 'Status',
+      key: 'Status',
+      render: (status: string) => {
+        if (status === 'Approved') return <Tag icon={<CheckCircleOutlined />} color="success">Approved</Tag>;
+        if (status === 'Rejected') return <Tag icon={<CloseCircleOutlined />} color="error">Rejected</Tag>;
+        return <Tag icon={<SyncOutlined spin />} color="processing">Pending</Tag>;
+      },
     },
     {
-      title: 'Avg CPI',
-      dataIndex: 'AverageCPI',
-      key: 'cpi',
-      render: (val) => (val ? Number(val).toFixed(2) : '-'),
-      sorter: (a, b) => (Number(a.AverageCPI) || 0) - (Number(b.AverageCPI) || 0),
+      title: 'Action',
+      key: 'action',
+      render: (_: any, record: any) => (
+        <Button
+          type="primary"
+          ghost
+          icon={<EyeOutlined />}
+          onClick={() => handleReviewClick(record)}
+          style={{ color: 'black', borderColor: '#bfbfbf' }}
+          className="hover:text-blue-600 hover:border-blue-600"
+        >
+          Review
+        </Button>
+      ),
     },
   ];
 
-  if (isLoading) {
-    return (
-      <AppLayout>
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
-          <Spin size="large" />
-        </div>
-      </AppLayout>
-    );
-  }
-
   return (
     <AppLayout>
-      <Title level={2} style={{ marginBottom: 24 }}>Reports</Title>
+      <motion.div initial="hidden" animate="visible" variants={containerVariants}>
+        <motion.div variants={itemVariants}>
+          <PageHeader
+            title="Student Reports Review"
+            subtitle="Review, approve, or reject student project proposals and reports"
+            breadcrumbs={[
+              { title: 'Faculty', href: '/faculty' },
+              { title: 'Reports' },
+            ]}
+          />
+        </motion.div>
 
-      <Card>
-        <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-          <Space>
-            <Select
-              placeholder="Filter by Type"
-              allowClear
-              style={{ width: 200 }}
-              value={projectTypeFilter}
-              onChange={setProjectTypeFilter}
-            >
-              {projectTypes?.map((pt) => (
-                <Select.Option key={pt.ProjectTypeID} value={pt.ProjectTypeID}>
-                  {pt.ProjectTypeName}
-                </Select.Option>
-              ))}
-            </Select>
-          </Space>
-          <Space>
-            <Button icon={<FileExcelOutlined />} onClick={handleExportExcel}>
-              Export Excel
-            </Button>
-            <Button icon={<FilePdfOutlined />} onClick={handleExportPDF}>
-              Export PDF
-            </Button>
-          </Space>
-        </div>
+        <motion.div variants={itemVariants}>
+          <DataTable
+            columns={columns}
+            dataSource={reports || []}
+            rowKey="ReportID"
+            loading={isLoading}
+            showSearch={true}
+            searchPlaceholder="Search by title..."
+          />
+        </motion.div>
+      </motion.div>
 
-        <Table<ProjectWithProgress>
-          columns={columns}
-          dataSource={projects || []}
-          rowKey="ProjectGroupID"
-          pagination={{
-            showSizeChanger: true,
-            showTotal: (total) => `Total ${total} projects`,
-          }}
-        />
-      </Card>
+      <Modal
+        title="Review Student Report"
+        open={isReviewModalOpen}
+        onCancel={() => {
+          setIsReviewModalOpen(false);
+          form.resetFields();
+          setSelectedReport(null);
+        }}
+        footer={null}
+        width={600}
+      >
+        {selectedReport && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: 16 }}>
+            <Card size="small" className="bg-blue-50/50 border-blue-100">
+              <Row gutter={[16, 16]}>
+                <Col span={24}>
+                  <Text type="secondary" style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Title</Text>
+                  <div style={{ fontWeight: 600, fontSize: 16 }}>{selectedReport.Title}</div>
+                </Col>
+                <Col span={12}>
+                  <Text type="secondary" style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Student</Text>
+                  <div style={{ fontWeight: 500 }}>{selectedReport.Student?.StudentName}</div>
+                </Col>
+                <Col span={12}>
+                  <Text type="secondary" style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Group</Text>
+                  <div style={{ fontWeight: 500 }}>{selectedReport.ProjectGroup?.ProjectGroupName}</div>
+                </Col>
+                {selectedReport.Description && (
+                  <Col span={24}>
+                    <Text type="secondary" style={{ fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Description Notes</Text>
+                    <div style={{ padding: '8px 12px', background: 'white', borderRadius: 6, border: '1px solid #e2e8f0', marginTop: 4 }}>
+                      {selectedReport.Description}
+                    </div>
+                  </Col>
+                )}
+                <Col span={24}>
+                  <Button 
+                    type="dashed" 
+                    block 
+                    icon={getFileIcon(selectedReport.FileType)}
+                    href={
+                      selectedReport.FileUrl.includes('/image/upload/') && selectedReport.FileType.toLowerCase() === 'pdf' 
+                        ? `/api/view-report/${selectedReport.Title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf?url=${encodeURIComponent(selectedReport.FileUrl)}` 
+                        : selectedReport.FileUrl
+                    }
+                    target="_blank"
+                    style={{ marginTop: 8 }}
+                  >
+                    Open Document ({selectedReport.FileType.toUpperCase()})
+                  </Button>
+                </Col>
+              </Row>
+            </Card>
+
+            <Form form={form} layout="vertical">
+              <Form.Item name="feedback" label={<span style={{ fontWeight: 600 }}>Faculty Feedback</span>}>
+                <Input.TextArea rows={4} placeholder="Provide constructive feedback for the student regarding this report..." />
+              </Form.Item>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 24 }}>
+                <Button 
+                  onClick={() => handleStatusUpdate('Rejected')}
+                  danger
+                  loading={reviewMutation.isPending}
+                >
+                  Reject Report
+                </Button>
+                <Button 
+                  type="primary" 
+                  style={{ background: '#52c41a', borderColor: '#52c41a' }}
+                  onClick={() => handleStatusUpdate('Approved')}
+                  loading={reviewMutation.isPending}
+                >
+                  Approve Report
+                </Button>
+              </div>
+            </Form>
+          </div>
+        )}
+      </Modal>
     </AppLayout>
   );
 }

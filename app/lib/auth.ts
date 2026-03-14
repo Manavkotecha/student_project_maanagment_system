@@ -33,8 +33,27 @@ export const authOptions: NextAuthOptions = {
         });
 
         if (user && user.hashedPassword && await bcrypt.compare(credentials.password, user.hashedPassword)) {
+          let targetId = user.id;
+          
+          // If it's a student, try to get their StudentID for the dashboard
+          if (user.role?.toLowerCase() === 'student') {
+            const studentRecord = await prisma.student.findUnique({
+              where: { Email: user.email! }
+            });
+            if (studentRecord) {
+              targetId = studentRecord.StudentID.toString();
+            }
+          } else if (user.role?.toLowerCase() === 'faculty' || user.role?.toLowerCase() === 'admin') {
+            const staffRecord = await prisma.staff.findUnique({
+              where: { Email: user.email! }
+            });
+            if (staffRecord) {
+              targetId = staffRecord.StaffID.toString();
+            }
+          }
+
           return {
-            id: user.id,
+            id: targetId,
             name: user.name,
             email: user.email,
             role: user.role || 'Student',

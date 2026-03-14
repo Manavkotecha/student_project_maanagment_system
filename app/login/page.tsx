@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Form, Input, Button, Card, Typography, App, Space } from 'antd';
@@ -25,7 +25,12 @@ export default function LoginPage() {
 function LoginPageInner() {
   const [form] = Form.useForm<LoginForm>();
   const [loading, setLoading] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/';
   const { message } = App.useApp();
@@ -52,6 +57,12 @@ function LoginPageInner() {
       setLoading(false);
     }
   };
+
+  if (!isMounted) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#f8fafc' }} />
+    );
+  }
 
   return (
     <div

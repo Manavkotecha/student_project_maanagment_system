@@ -98,7 +98,7 @@ export default function DataTable<T extends object>({
         scroll={{ x: 'max-content' }}
         pagination={{
           showSizeChanger: true,
-          showQuickJumper: true,
+          showQuickJumper: false, /* Disabled to fix duplicate "Go To" box bug */
           showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`,
           pageSizeOptions: ['10', '20', '50', '100'],
           ...tableProps.pagination,

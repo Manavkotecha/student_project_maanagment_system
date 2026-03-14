@@ -7,7 +7,8 @@ import { motion } from 'framer-motion';
 import { useSession } from 'next-auth/react';
 import AppLayout from '@/components/layout/AppLayout';
 import PageHeader from '@/components/ui/PageHeader';
-import ChatWindow from '@/components/ui/ChatWindow';
+import StreamProvider from '@/components/stream/StreamProvider';
+import StreamChatWindow from '@/components/stream/StreamChatWindow';
 import { useGroups } from '@/hooks/useGroups';
 import { useMeetings } from '@/hooks/useMeetings';
 import { useStaff } from '@/hooks/useStaff';
@@ -21,7 +22,6 @@ export default function FacultyMessagesPage() {
 
   const currentStaff = staff?.find((s) => s.Email?.toLowerCase() === session?.user?.email?.toLowerCase());
 
-  // Groups where this faculty is guide (via meetings), convener, or expert
   const myGroupIds = useMemo(() => {
     if (!meetings || !currentStaff) return [];
     const fromMeetings = meetings
@@ -47,6 +47,7 @@ export default function FacultyMessagesPage() {
 
   return (
     <AppLayout>
+      <StreamProvider>
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
         <PageHeader
           title="Messages"
@@ -92,13 +93,14 @@ export default function FacultyMessagesPage() {
           {/* Chat area */}
           <div style={{ flex: 1, minWidth: 0 }}>
             {selectedGroup ? (
-              <ChatWindow groupId={selectedGroup.ProjectGroupID} groupName={selectedGroup.ProjectGroupName} />
+              <StreamChatWindow groupId={selectedGroup.ProjectGroupID} groupName={selectedGroup.ProjectGroupName} />
             ) : (
               <EmptyChat />
             )}
           </div>
         </div>
       </motion.div>
+      </StreamProvider>
     </AppLayout>
   );
 }

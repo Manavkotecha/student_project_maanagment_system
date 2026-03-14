@@ -132,6 +132,11 @@ function getMenuItems(role: string | undefined): MenuItem[] {
       label: 'Messages',
     },
     {
+      key: '/student/reports',
+      icon: <FileText size={18} />,
+      label: 'Reports',
+    },
+    {
       key: '/student/profile',
       icon: <UserCircle size={18} />,
       label: 'Profile',
@@ -164,6 +169,12 @@ export default function AppLayout({ children }: AppLayoutProps) {
     return () => window.removeEventListener('resize', check);
   }, []);
 
+  useEffect(() => {
+    if (status === 'unauthenticated' && !session) {
+      router.push('/login');
+    }
+  }, [session, status, router]);
+
   if (status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
@@ -176,7 +187,6 @@ export default function AppLayout({ children }: AppLayoutProps) {
   }
 
   if (!session) {
-    router.push('/login');
     return null;
   }
 

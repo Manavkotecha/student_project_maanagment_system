@@ -6,7 +6,8 @@ import { MessageSquare, Users, Search } from 'lucide-react';
 import { motion } from 'framer-motion';
 import AppLayout from '@/components/layout/AppLayout';
 import PageHeader from '@/components/ui/PageHeader';
-import ChatWindow from '@/components/ui/ChatWindow';
+import StreamProvider from '@/components/stream/StreamProvider';
+import StreamChatWindow from '@/components/stream/StreamChatWindow';
 import { useGroups } from '@/hooks/useGroups';
 
 export default function AdminMessagesPage() {
@@ -24,6 +25,7 @@ export default function AdminMessagesPage() {
 
   return (
     <AppLayout>
+      <StreamProvider>
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
         <PageHeader
           title="Messages"
@@ -76,13 +78,14 @@ export default function AdminMessagesPage() {
           {/* Chat area */}
           <div style={{ flex: 1, minWidth: 0 }}>
             {selectedGroup ? (
-              <ChatWindow groupId={selectedGroup.ProjectGroupID} groupName={selectedGroup.ProjectGroupName} />
+              <StreamChatWindow groupId={selectedGroup.ProjectGroupID} groupName={selectedGroup.ProjectGroupName} />
             ) : (
               <EmptyChat />
             )}
           </div>
         </div>
       </motion.div>
+      </StreamProvider>
     </AppLayout>
   );
 }

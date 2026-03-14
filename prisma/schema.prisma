@@ -45,24 +45,13 @@ model ProjectGroup {
   ProjectType                               ProjectType          @relation(fields: [ProjectTypeID], references: [ProjectTypeID], onUpdate: NoAction)
   ProjectGroupMember                        ProjectGroupMember[]
   ProjectMeeting                            ProjectMeeting[]
-  GroupMessage                              GroupMessage[]
+  StudentReport                             StudentReport[]
 
   @@index([ConvenerStaffID], map: "idx_projectgroup_convener")
   @@index([ProjectTypeID], map: "idx_projectgroup_type")
 }
 
-model GroupMessage {
-  MessageID      Int          @id @default(autoincrement())
-  ProjectGroupID Int
-  SenderEmail    String       @db.VarChar(255)
-  SenderName     String       @db.VarChar(255)
-  SenderRole     String       @db.VarChar(50)
-  Content        String
-  CreatedAt      DateTime     @default(now()) @db.Timestamptz(6)
-  ProjectGroup   ProjectGroup @relation(fields: [ProjectGroupID], references: [ProjectGroupID], onDelete: Cascade, onUpdate: NoAction)
 
-  @@index([ProjectGroupID, CreatedAt], map: "idx_groupmsg_group_time")
-}
 
 model ProjectGroupMember {
   ProjectGroupMemberID Int          @id @default(autoincrement())
@@ -156,6 +145,7 @@ model Staff {
   ProjectGroup_ProjectGroup_ConvenerStaffIDToStaff ProjectGroup[]   @relation("ProjectGroup_ConvenerStaffIDToStaff")
   ProjectGroup_ProjectGroup_ExpertStaffIDToStaff   ProjectGroup[]   @relation("ProjectGroup_ExpertStaffIDToStaff")
   ProjectMeeting                                   ProjectMeeting[]
+  StudentReport                                    StudentReport[]
 
   @@index([Email], map: "idx_staff_email")
 }
@@ -171,6 +161,7 @@ model Student {
   Modified                 DateTime?                  @default(now()) @db.Timestamptz(6)
   ProjectGroupMember       ProjectGroupMember[]
   ProjectMeetingAttendance ProjectMeetingAttendance[]
+  StudentReport            StudentReport[]
 
   @@index([Email], map: "idx_student_email")
 }
@@ -196,4 +187,27 @@ model VerificationToken {
 
   @@unique([identifier, token])
   @@index([token], map: "idx_verification_token")
+}
+
+model StudentReport {
+  ReportID         Int          @id @default(autoincrement())
+  Title            String       @db.VarChar(255)
+  Description      String?
+  FileUrl          String       @db.VarChar(500)
+  FileType         String       @db.VarChar(50) 
+  Status           String       @default("Pending") @db.VarChar(50) 
+  Feedback         String?      
+  StudentID        Int
+  ProjectGroupID   Int
+  FacultyID        Int
+  Created          DateTime?    @default(now()) @db.Timestamptz(6)
+  Modified         DateTime?    @default(now()) @db.Timestamptz(6)
+
+  Student          Student      @relation(fields: [StudentID], references: [StudentID], onDelete: Cascade)
+  ProjectGroup     ProjectGroup @relation(fields: [ProjectGroupID], references: [ProjectGroupID], onDelete: Cascade)
+  Faculty          Staff        @relation(fields: [FacultyID], references: [StaffID], onDelete: Cascade)
+
+  @@index([StudentID], map: "idx_report_student")
+  @@index([ProjectGroupID], map: "idx_report_group")
+  @@index([FacultyID], map: "idx_report_faculty")
 }
