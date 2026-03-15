@@ -65,7 +65,6 @@ export default function DataTable<T extends object>({
                   onSearch?.(e.target.value);
                 }}
                 style={{ width: 250 }}
-                prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />}
               />
               <Button
                 icon={<SearchOutlined />}

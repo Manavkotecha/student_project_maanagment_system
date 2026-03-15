@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Row, Col, Card, Typography, List, Tag, Empty, Spin, Progress, Avatar, Space, Button } from 'antd';
+import { Row, Col, Card, Typography, Tag, Empty, Spin, Avatar, Space, Button } from 'antd';
 import { motion } from 'framer-motion';
 import {
   FolderKanban,
@@ -9,7 +9,6 @@ import {
   CheckCircle2,
   Clock,
   ArrowRight,
-  Users,
   Plus,
   MapPin,
   FileText,
@@ -302,10 +301,10 @@ export default function FacultyDashboard() {
         >
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             <Link href="/faculty/meetings">
-              <div className="p-6 rounded-2xl bg-gradient-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 transition-all cursor-pointer group"
+              <div className="p-6 rounded-2xl bg-linear-to-br from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 transition-all cursor-pointer group"
                 style={{ boxShadow: '0 4px 15px -3px rgba(0, 123, 255, 0.2)' }}>
                 <div className="flex flex-col items-center text-center">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg"
+                  <div className="w-16 h-16 rounded-2xl bg-linear-to-br from-blue-500 to-blue-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg"
                     style={{ boxShadow: '0 8px 20px -5px rgba(0, 123, 255, 0.5)' }}>
                     <Plus size={28} className="text-white" />
                   </div>
@@ -315,10 +314,10 @@ export default function FacultyDashboard() {
               </div>
             </Link>
             <Link href="/faculty/projects">
-              <div className="p-6 rounded-2xl bg-gradient-to-br from-sky-50 to-sky-100 hover:from-sky-100 hover:to-sky-200 transition-all cursor-pointer group"
+              <div className="p-6 rounded-2xl bg-linear-to-br from-sky-50 to-sky-100 hover:from-sky-100 hover:to-sky-200 transition-all cursor-pointer group"
                 style={{ boxShadow: '0 4px 15px -3px rgba(0, 123, 255, 0.15)' }}>
                 <div className="flex flex-col items-center text-center">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-sky-500 to-sky-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg"
+                  <div className="w-16 h-16 rounded-2xl bg-linear-to-br from-sky-500 to-sky-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg"
                     style={{ boxShadow: '0 8px 20px -5px rgba(14, 165, 233, 0.5)' }}>
                     <FolderKanban size={28} className="text-white" />
                   </div>
@@ -328,10 +327,10 @@ export default function FacultyDashboard() {
               </div>
             </Link>
             <Link href="/faculty/meetings">
-              <div className="p-6 rounded-2xl bg-gradient-to-br from-orange-50 to-orange-100 hover:from-orange-100 hover:to-orange-200 transition-all cursor-pointer group"
+              <div className="p-6 rounded-2xl bg-linear-to-br from-orange-50 to-orange-100 hover:from-orange-100 hover:to-orange-200 transition-all cursor-pointer group"
                 style={{ boxShadow: '0 4px 15px -3px rgba(249, 115, 22, 0.2)' }}>
                 <div className="flex flex-col items-center text-center">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg"
+                  <div className="w-16 h-16 rounded-2xl bg-linear-to-br from-orange-500 to-orange-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg"
                     style={{ boxShadow: '0 8px 20px -5px rgba(249, 115, 22, 0.5)' }}>
                     <Calendar size={28} className="text-white" />
                   </div>
@@ -341,10 +340,10 @@ export default function FacultyDashboard() {
               </div>
             </Link>
             <Link href="/faculty/reports">
-              <div className="p-6 rounded-2xl bg-gradient-to-br from-emerald-50 to-emerald-100 hover:from-emerald-100 hover:to-emerald-200 transition-all cursor-pointer group"
+              <div className="p-6 rounded-2xl bg-linear-to-br from-emerald-50 to-emerald-100 hover:from-emerald-100 hover:to-emerald-200 transition-all cursor-pointer group"
                 style={{ boxShadow: '0 4px 15px -3px rgba(16, 185, 129, 0.2)' }}>
                 <div className="flex flex-col items-center text-center">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg"
+                  <div className="w-16 h-16 rounded-2xl bg-linear-to-br from-emerald-500 to-emerald-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg"
                     style={{ boxShadow: '0 8px 20px -5px rgba(16, 185, 129, 0.5)' }}>
                     <FileText size={28} className="text-white" />
                   </div>

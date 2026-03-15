@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Form, Input, Button, Tag, Space, Modal, Row, Col, Typography, Card, App } from 'antd';
 import { FilePdfOutlined, FileExcelOutlined, FileTextOutlined, FileImageOutlined, CheckCircleOutlined, SyncOutlined, CloseCircleOutlined, EyeOutlined } from '@ant-design/icons';
 import { motion } from 'framer-motion';
@@ -24,6 +24,7 @@ const itemVariants = {
 };
 
 type ReportRow = {
+  Feedback: string;
   ReportID: number;
   Title: string;
   FileType: string;
@@ -43,13 +44,25 @@ export default function FacultyReportsPage() {
   const [selectedReport, setSelectedReport] = useState<ReportRow | null>(null);
   const [submittingStatus, setSubmittingStatus] = useState<'Approved' | 'Rejected' | null>(null);
 
-  const { data: reports, isLoading } = useQuery<ReportRow[]>({
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const { data: reports, isLoading, refetch } = useQuery<ReportRow[]>({
     queryKey: ['faculty-reports'],
     queryFn: async () => {
       const response = await axios.get('/api/student-reports');
       return response.data;
     },
   });
+
+  const filteredReports = useMemo(() => {
+    if (!reports || !searchTerm) return reports || [];
+    const lower = searchTerm.toLowerCase();
+    return reports.filter((r) =>
+      r.Title.toLowerCase().includes(lower) ||
+      r.Student?.StudentName?.toLowerCase().includes(lower) ||
+      r.ProjectGroup?.ProjectGroupName?.toLowerCase().includes(lower)
+    );
+  }, [reports, searchTerm]);
 
   const reviewMutation = useMutation({
     mutationFn: async ({ id, status, feedback }: { id: number; status: string; feedback: string }) => {
@@ -187,11 +200,14 @@ export default function FacultyReportsPage() {
         <motion.div variants={itemVariants}>
           <DataTable
             columns={columns}
-            dataSource={reports || []}
+            dataSource={filteredReports}
             rowKey="ReportID"
             loading={isLoading}
-            showSearch={true}
-            searchPlaceholder="Search by title..."
+            showSearch
+            searchPlaceholder="Search by title, student, or group..."
+            onSearch={(value) => setSearchTerm(value)}
+            showRefresh
+            onRefresh={() => refetch()}
           />
         </motion.div>
       </motion.div>
