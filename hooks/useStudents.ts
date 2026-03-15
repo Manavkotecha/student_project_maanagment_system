@@ -1,12 +1,12 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { Student, CreateStudentInput } from '@/app/types';
+import type { Student, CreateStudentInput, ProjectGroupMember } from '@/app/types';
 
 const QUERY_KEY = 'students';
 
 interface StudentWithGroups extends Student {
-    ProjectGroupMember?: Array<{
+    ProjectGroupMember?: Array<ProjectGroupMember & {
         ProjectGroup: {
             ProjectGroupID: number;
             ProjectGroupName: string;
