@@ -5,7 +5,7 @@ import type { Student, CreateStudentInput, ProjectGroupMember, ProjectGroup } fr
 
 const QUERY_KEY = 'students';
 
-interface StudentWithGroups extends Student {
+interface StudentWithGroups extends Omit<Student, 'ProjectGroupMember'> {
     ProjectGroupMember?: Array<ProjectGroupMember & {
         ProjectGroup: Pick<ProjectGroup, 'ProjectGroupID' | 'ProjectGroupName' | 'ProjectTitle'>;
     }>;
