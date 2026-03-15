@@ -16,16 +16,12 @@ import {
   useUpdateStudent,
   useDeleteStudent,
 } from '@/hooks/useStudents';
-import type { Student, CreateStudentInput } from '@/app/types';
+import type { Student, CreateStudentInput, ProjectGroupMember, ProjectGroup } from '@/app/types';
 import { formatDate, getInitials } from '@/app/lib/utils';
 
-interface StudentWithGroups extends Student {
-  ProjectGroupMember?: Array<{
-    ProjectGroup: {
-      ProjectGroupID: number;
-      ProjectGroupName: string;
-      ProjectTitle: string;
-    };
+interface StudentWithGroups extends Omit<Student, 'ProjectGroupMember'> {
+  ProjectGroupMember?: Array<ProjectGroupMember & {
+    ProjectGroup: Pick<ProjectGroup, 'ProjectGroupID' | 'ProjectGroupName' | 'ProjectTitle'>;
   }>;
 }
 
