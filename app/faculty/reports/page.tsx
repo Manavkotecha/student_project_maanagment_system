@@ -11,7 +11,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { formatDate } from '@/app/lib/utils';
 
-const { Text, Title } = Typography;
+const { Text } = Typography;
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -23,15 +23,27 @@ const itemVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
 };
 
+type ReportRow = {
+  ReportID: number;
+  Title: string;
+  FileType: string;
+  FileUrl: string;
+  Description?: string;
+  Status: string;
+  Student?: { StudentName: string };
+  ProjectGroup?: { ProjectGroupName: string };
+};
+
 export default function FacultyReportsPage() {
   const { message } = App.useApp();
   const queryClient = useQueryClient();
   const [form] = Form.useForm();
   
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
-  const [selectedReport, setSelectedReport] = useState<any>(null);
+  const [selectedReport, setSelectedReport] = useState<ReportRow | null>(null);
+  const [submittingStatus, setSubmittingStatus] = useState<'Approved' | 'Rejected' | null>(null);
 
-  const { data: reports, isLoading } = useQuery({
+  const { data: reports, isLoading } = useQuery<ReportRow[]>({
     queryKey: ['faculty-reports'],
     queryFn: async () => {
       const response = await axios.get('/api/student-reports');
@@ -49,14 +61,17 @@ export default function FacultyReportsPage() {
       setIsReviewModalOpen(false);
       form.resetFields();
       setSelectedReport(null);
+      setSubmittingStatus(null);
       queryClient.invalidateQueries({ queryKey: ['faculty-reports'] });
     },
-    onError: (error: any) => {
-      message.error(error.response?.data?.error || 'Failed to update report status.');
+    onError: (error: unknown) => {
+      setSubmittingStatus(null);
+      const err = error as { response?: { data?: { error?: string } } };
+      message.error(err.response?.data?.error || 'Failed to update report status.');
     },
   });
 
-  const handleReviewClick = (report: any) => {
+  const handleReviewClick = (report: ReportRow) => {
     setSelectedReport(report);
     form.setFieldsValue({
       feedback: report.Feedback || '',
@@ -66,6 +81,7 @@ export default function FacultyReportsPage() {
 
   const handleStatusUpdate = (status: 'Approved' | 'Rejected') => {
     if (!selectedReport) return;
+    setSubmittingStatus(status);
     reviewMutation.mutate({
       id: selectedReport.ReportID,
       status,
@@ -85,13 +101,36 @@ export default function FacultyReportsPage() {
     {
       title: 'Report Title',
       key: 'Title',
-      render: (_: any, record: any) => (
+      ellipsis: true,
+      render: (_: unknown, record: ReportRow) => (
         <Space>
           <div style={{ fontSize: 20 }}>{getFileIcon(record.FileType)}</div>
-          <div>
-            <div style={{ fontWeight: 600, color: '#1e293b' }}>{record.Title}</div>
-            <div style={{ fontSize: 13, color: '#64748b' }}>
-               {record.Student?.StudentName} ({record.ProjectGroup?.ProjectGroupName})
+          <div style={{ minWidth: 0 }}>
+            <div
+              style={{
+                fontWeight: 600,
+                color: '#1e293b',
+                maxWidth: 320,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+              title={record.Title}
+            >
+              {record.Title}
+            </div>
+            <div
+              style={{
+                fontSize: 13,
+                color: '#64748b',
+                maxWidth: 320,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+              title={`${record.Student?.StudentName ?? ''} (${record.ProjectGroup?.ProjectGroupName ?? ''})`}
+            >
+              {record.Student?.StudentName} ({record.ProjectGroup?.ProjectGroupName})
             </div>
           </div>
         </Space>
@@ -116,7 +155,7 @@ export default function FacultyReportsPage() {
     {
       title: 'Action',
       key: 'action',
-      render: (_: any, record: any) => (
+      render: (_: unknown, record: ReportRow) => (
         <Button
           type="primary"
           ghost
@@ -198,7 +237,7 @@ export default function FacultyReportsPage() {
                     block 
                     icon={getFileIcon(selectedReport.FileType)}
                     href={
-                      selectedReport.FileUrl.includes('/image/upload/') && selectedReport.FileType.toLowerCase() === 'pdf' 
+                      selectedReport.FileType.toLowerCase() === 'pdf' 
                         ? `/api/view-report/${selectedReport.Title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf?url=${encodeURIComponent(selectedReport.FileUrl)}` 
                         : selectedReport.FileUrl
                     }
@@ -220,7 +259,7 @@ export default function FacultyReportsPage() {
                 <Button 
                   onClick={() => handleStatusUpdate('Rejected')}
                   danger
-                  loading={reviewMutation.isPending}
+                  loading={reviewMutation.isPending && submittingStatus === 'Rejected'}
                 >
                   Reject Report
                 </Button>
@@ -228,7 +267,7 @@ export default function FacultyReportsPage() {
                   type="primary" 
                   style={{ background: '#52c41a', borderColor: '#52c41a' }}
                   onClick={() => handleStatusUpdate('Approved')}
-                  loading={reviewMutation.isPending}
+                  loading={reviewMutation.isPending && submittingStatus === 'Approved'}
                 >
                   Approve Report
                 </Button>

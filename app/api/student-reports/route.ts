@@ -59,7 +59,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // Convert File -> Buffer -> Cloudinary upload_stream
+    // Convert File -> Buffer
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
@@ -67,13 +67,32 @@ export async function POST(req: Request) {
     const sanitizedName = originalFileName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
     const fileExtension = file.name.split('.').pop()?.toLowerCase() || 'bin';
     
-    // For raw files (like text), Cloudinary needs the extension in public_id to serve it correctly later
-    const publicId = `${sanitizedName}_${Date.now()}.${fileExtension}`;
+    let finalBuffer = buffer;
+    let resourceType: 'image' | 'raw' = 'raw';
+    let publicId = `${sanitizedName}_${Date.now()}`;
+    let finalExtension = fileExtension;
+
+    const isPdf = fileExtension === 'pdf' || file.type === 'application/pdf';
+
+    if (isPdf) {
+      // Enigma Strategy: Base64 encode PDF to bypass Cloudinary delivery filters
+      const base64Content = buffer.toString('base64');
+      finalBuffer = Buffer.from(base64Content);
+      resourceType = 'raw';
+      finalExtension = 'txt'; // Hide as text
+      publicId = `${publicId}.${finalExtension}`;
+    } else {
+      const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(fileExtension);
+      resourceType = isImage ? 'image' : 'raw';
+      if (resourceType === 'raw') {
+        publicId = `${publicId}.${fileExtension}`;
+      }
+    }
 
     const uploadResult: any = await new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
-          resource_type: 'auto', 
+          resource_type: resourceType, 
           folder: 'student-reports',
           public_id: publicId,
         },
@@ -82,7 +101,7 @@ export async function POST(req: Request) {
           else resolve(result);
         }
       );
-      uploadStream.end(buffer);
+      uploadStream.end(finalBuffer);
     });
 
     const fileUrl = uploadResult.secure_url;

@@ -266,7 +266,8 @@ export default function StudentDashboard() {
                   View All <ArrowRight size={14} />
                 </Link>
               }
-              style={{ borderRadius: 16, border: '1px solid #e2e8f0' }}
+              style={{ borderRadius: 16, border: '1px solid #e2e8f0', height: '100%' }}
+              styles={{ body: { display: 'flex', flexDirection: 'column', height: 'calc(100% - 58px)' } }}
             >
               {upcomingMeetings.length === 0 ? (
                 <Empty
@@ -281,27 +282,38 @@ export default function StudentDashboard() {
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.3, delay: index * 0.1 }}
-                      className="p-4 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors"
+                      style={{
+                        padding: 16,
+                        borderRadius: 14,
+                        marginBottom: 12,
+                        background: 'linear-gradient(135deg, #f8fafc 0%, #ffffff 100%)',
+                        border: '1px solid #e2e8f0',
+                        transition: 'all 0.2s ease',
+                        cursor: 'pointer',
+                      }}
+                      className="hover:border-blue-200 hover:shadow-md"
                     >
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <Text strong className="text-slate-800 block mb-1">
+                      <div className="flex justify-between items-start" style={{ marginBottom: 4 }}>
+                        <div className="flex-1 pr-4">
+                          <Text strong style={{ fontSize: 16, color: '#1e293b', lineHeight: '24px', display: 'block', marginBottom: 4 }}>
                             {meeting.ProjectGroup?.ProjectGroupName}
                           </Text>
-                          <Text className="text-slate-500 text-sm block mb-2">
+                          <Text style={{ color: '#64748b', fontSize: 13, display: 'block', marginBottom: 10, lineHeight: '18px' }}>
                             {meeting.MeetingPurpose}
                           </Text>
-                          <div className="flex items-center gap-4 text-sm text-slate-500">
-                            <span className="flex items-center gap-1">
-                              <Calendar size={14} />
-                              {formatDateTime(meeting.MeetingDateTime)}
-                            </span>
-                            {meeting.MeetingLocation && (
+                          <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 10 }}>
+                            <div className="flex items-center gap-5 text-sm text-slate-500">
                               <span className="flex items-center gap-1">
-                                <MapPin size={14} />
-                                {meeting.MeetingLocation}
+                                <Calendar size={14} />
+                                {formatDateTime(meeting.MeetingDateTime)}
                               </span>
-                            )}
+                              {meeting.MeetingLocation && (
+                                <span className="flex items-center gap-1">
+                                  <MapPin size={14} />
+                                  {meeting.MeetingLocation}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
                         <Tag color={getMeetingStatusColor(meeting.MeetingStatus)}>

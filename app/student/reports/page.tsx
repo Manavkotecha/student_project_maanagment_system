@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Form, Input, Button, Upload, Tag, Row, Col, Space, Typography, App } from 'antd';
+import React, { useState } from 'react';
+import { Form, Input, Button, Upload, Tag, Space, Typography, App } from 'antd';
 import { UploadOutlined, FilePdfOutlined, FileExcelOutlined, FileTextOutlined, FileImageOutlined, CheckCircleOutlined, SyncOutlined, CloseCircleOutlined } from '@ant-design/icons';
 import { motion } from 'framer-motion';
 import AppLayout from '@/components/layout/AppLayout';
@@ -11,9 +11,24 @@ import FormModal from '@/components/ui/FormModal';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { formatDate } from '@/app/lib/utils';
-import type { UploadProps } from 'antd';
+import type { UploadFile, UploadProps } from 'antd';
 
 const { Text } = Typography;
+
+type StudentReportRow = {
+  ReportID: number;
+  Title: string;
+  Description?: string;
+  FileType: string;
+  FileUrl: string;
+  Created: string;
+  Status: string;
+  Feedback?: string;
+  Faculty?: {
+    StaffName: string;
+  };
+};
+
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
@@ -27,11 +42,16 @@ const itemVariants = {
 export default function StudentReportsPage() {
   const { message } = App.useApp();
   const queryClient = useQueryClient();
-  const [form] = Form.useForm();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [fileList, setFileList] = useState<any[]>([]);
+  type StudentReportFormValues = {
+    title: string;
+    description?: string;
+  };
 
-  const { data: reports, isLoading } = useQuery({
+  const [form] = Form.useForm<StudentReportFormValues>();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [fileList, setFileList] = useState<UploadFile[]>([]);
+
+  const { data: reports, isLoading } = useQuery<StudentReportRow[]>({
     queryKey: ['student-reports'],
     queryFn: async () => {
       const response = await axios.get('/api/student-reports');
@@ -53,8 +73,9 @@ export default function StudentReportsPage() {
       setFileList([]);
       queryClient.invalidateQueries({ queryKey: ['student-reports'] });
     },
-    onError: (error: any) => {
-      message.error(error.response?.data?.error || 'Failed to submit report. Please note that you must be assigned to a group first.');
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { error?: string } } };
+      message.error(err.response?.data?.error || 'Failed to submit report. Please note that you must be assigned to a group first.');
     },
   });
 
@@ -82,7 +103,7 @@ export default function StudentReportsPage() {
     fileList,
   };
 
-  const handleSubmit = async (values: any) => {
+  const handleSubmit = async (values: StudentReportFormValues) => {
     if (fileList.length === 0) {
       message.error('Please upload a file.');
       return;
@@ -107,13 +128,35 @@ export default function StudentReportsPage() {
     {
       title: 'Report Title',
       key: 'Title',
-      render: (_: any, record: any) => (
+      render: (_: unknown, record: StudentReportRow) => (
         <Space>
           <div style={{ fontSize: 20 }}>{getFileIcon(record.FileType)}</div>
-          <div>
-            <div style={{ fontWeight: 600, color: '#1e293b' }}>{record.Title}</div>
+          <div style={{ minWidth: 0 }}>
+            <div
+              style={{
+                fontWeight: 600,
+                color: '#1e293b',
+                maxWidth: 320,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+              title={record.Title}
+            >
+              {record.Title}
+            </div>
             {record.Description && (
-              <div style={{ fontSize: 13, color: '#64748b', maxWidth: 300 }} className="truncate">
+              <div
+                style={{
+                  fontSize: 13,
+                  color: '#64748b',
+                  maxWidth: 320,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+                title={record.Description}
+              >
                 {record.Description}
               </div>
             )}
@@ -130,7 +173,7 @@ export default function StudentReportsPage() {
     {
       title: 'Faculty Guide',
       key: 'Faculty',
-      render: (_: any, record: any) => record.Faculty?.StaffName || 'Unknown',
+      render: (_: unknown, record: StudentReportRow) => record.Faculty?.StaffName || 'Unknown',
     },
     {
       title: 'Status',
@@ -147,7 +190,20 @@ export default function StudentReportsPage() {
       dataIndex: 'Feedback',
       key: 'Feedback',
       render: (feedback: string) => feedback ? (
-        <Text italic style={{ color: '#475569' }}>"{feedback}"</Text>
+        <Text
+          italic
+          style={{
+            color: '#475569',
+            maxWidth: 320,
+            display: 'inline-block',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+          title={feedback}
+        >
+          “{feedback}”
+        </Text>
       ) : (
         <span style={{ color: '#cbd5e1' }}>Waiting for review</span>
       ),
@@ -155,11 +211,11 @@ export default function StudentReportsPage() {
     {
       title: 'Action',
       key: 'action',
-      render: (_: any, record: any) => (
+      render: (_: unknown, record: StudentReportRow) => (
         <Button
           type="link"
           href={
-            record.FileUrl.includes('/image/upload/') && record.FileType.toLowerCase() === 'pdf'
+            record.FileType.toLowerCase() === 'pdf'
               ? `/api/view-report/${record.Title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.pdf?url=${encodeURIComponent(record.FileUrl)}`
               : record.FileUrl
           }
@@ -186,13 +242,14 @@ export default function StudentReportsPage() {
           />
         </motion.div>
 
-        <motion.div variants={itemVariants}>
+        <motion.div variants={itemVariants} style={{ marginTop: -45 }}>
           <DataTable
             columns={columns}
             dataSource={reports || []}
             rowKey="ReportID"
             loading={isLoading}
             showSearch={false}
+            showRefresh={false}
             extraActions={
               <Button type="primary" icon={<UploadOutlined />} onClick={() => setIsModalOpen(true)}>
                 Submit New Report
@@ -215,11 +272,11 @@ export default function StudentReportsPage() {
         loading={submitMutation.isPending}
         width={500}
       >
-        <div style={{ marginBottom: 16, padding: '12px 16px', backgroundColor: '#eff6ff', borderRadius: 8, border: '1px solid #bfdbfe' }}>
+        {/* <div style={{ marginBottom: 16, padding: '12px 16px', backgroundColor: '#eff6ff', borderRadius: 8, border: '1px solid #bfdbfe' }}>
           <Text style={{ color: '#1e40af', fontSize: 13 }}>
             Note: You must be assigned to a project group before you can submit a proposal or report to your faculty guide.
           </Text>
-        </div>
+        </div> */}
 
         <Form.Item
           name="title"
