@@ -111,7 +111,7 @@ export default function StudentReportsPage() {
     const formData = new FormData();
     formData.append('title', values.title);
     if (values.description) formData.append('description', values.description);
-    formData.append('file', fileList[0]);
+    formData.append('file', fileList[0].originFileObj as File);
 
     submitMutation.mutate(formData);
   };
