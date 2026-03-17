@@ -144,7 +144,7 @@ export default function LandingPage() {
               <CalendarDays size={22} color="#fff" />
             </div>
             <span style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-navy)', letterSpacing: '-0.3px' }}>
-              Manav&apos;s Schedule
+              Projextion
             </span>
           </div>
 
@@ -578,7 +578,7 @@ export default function LandingPage() {
                 One App for Everything on Your Plate
               </h2>
               <p style={{ fontSize: '1.05rem', color: 'rgba(255,255,255,0.65)', lineHeight: 1.75, marginBottom: 36 }}>
-                Manav&apos;s Schedule empowers you and your team to plan smarter,
+                Projextion empowers you and your team to plan smarter,
                 not harder — with features designed for real-world productivity.
               </p>
               <div style={{ display: 'grid', gap: 16 }}>
@@ -742,7 +742,7 @@ export default function LandingPage() {
               Start Scheduling Smarter Today
             </h2>
             <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '1.05rem', marginBottom: 36 }}>
-              Join thousands of professionals who plan better with Manav&apos;s Schedule.
+              Join thousands of professionals who plan better with Projextion.
               No credit card required.
             </p>
 
@@ -817,7 +817,7 @@ export default function LandingPage() {
                 >
                   <CalendarDays size={20} color="#fff" />
                 </div>
-                <span style={{ fontWeight: 700, color: '#fff', fontSize: 15 }}>Manav&apos;s Schedule</span>
+                <span style={{ fontWeight: 700, color: '#fff', fontSize: 15 }}>Projextion</span>
               </div>
               <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 13, lineHeight: 1.7 }}>
                 A personal scheduling platform for professionals who value their time.
@@ -859,15 +859,15 @@ export default function LandingPage() {
             }}
           >
             <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13 }}>
-              © {new Date().getFullYear()} Manav&apos;s Schedule. All rights reserved.
+              © {new Date().getFullYear()} Projextion. All rights reserved.
             </p>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
               <Mail size={14} color="rgba(255,255,255,0.35)" />
               <a
-                href="mailto:hello@manavschedule.in"
+                href="mailto:hello@projextion.in"
                 style={{ color: 'rgba(255,255,255,0.35)', fontSize: 13, textDecoration: 'none' }}
               >
-                hello@manavschedule.in
+                hello@projextion.in
               </a>
             </div>
           </div>

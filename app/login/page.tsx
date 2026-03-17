@@ -168,7 +168,7 @@ function LoginPageInner() {
                 fontWeight: 500,
               }}
             >
-              Sign in to Manav&apos;s Schedule
+              Sign in to Projextion
             </Text>
           </div>
 
