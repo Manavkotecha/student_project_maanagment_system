@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Projextion - Your Ultimate Academic Companion",
+  title: "Projextion",
   description: "A seamless platform to organise tasks, set reminders, track progress, and collaborate — all from one intuitive dashboard.",
   keywords: ["schedule", "planner", "time management", "reminders", "collaboration", "productivity"],
 };

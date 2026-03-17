@@ -52,7 +52,7 @@ export default function Home() {
         transition={{ duration: 0.5 }}
         className="text-center"
       >
-        <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mx-auto mb-6 shadow-xl shadow-blue-500/30">
+        <div className="w-20 h-20 rounded-2xl bg-linear-to-br from-blue-500 to-blue-600 flex items-center justify-center mx-auto mb-6 shadow-xl shadow-blue-500/30">
           <GraduationCap size={40} className="text-white" />
         </div>
         <div className="flex items-center justify-center gap-3 mb-4">
