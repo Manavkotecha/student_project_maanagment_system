@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Manav's Schedule – Smart Time Management",
+  title: "Projextion - Your Ultimate Academic Companion",
   description: "A seamless platform to organise tasks, set reminders, track progress, and collaborate — all from one intuitive dashboard.",
   keywords: ["schedule", "planner", "time management", "reminders", "collaboration", "productivity"],
 };
