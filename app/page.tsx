@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { GraduationCap } from 'lucide-react';
 import LandingPage from './(public)/page';
 
 export default function Home() {
@@ -52,8 +52,8 @@ export default function Home() {
         transition={{ duration: 0.5 }}
         className="text-center"
       >
-        <div className="w-20 h-20 rounded-2xl bg-linear-to-br from-blue-500 to-blue-600 flex items-center justify-center mx-auto mb-6 shadow-xl shadow-blue-500/30">
-          <GraduationCap size={40} className="text-white" />
+        <div className="mx-auto mb-6" style={{ width: 80, height: 80 }}>
+          <img src="/logo.png" alt="Projextion Logo" width={80} height={80} style={{ display: 'block', objectFit: 'contain', transform: 'scale(1.8)' }} />
         </div>
         <div className="flex items-center justify-center gap-3 mb-4">
           <div className="w-2 h-2 rounded-full bg-blue-600 animate-bounce" style={{ animationDelay: '0ms' }} />

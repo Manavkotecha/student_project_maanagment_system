@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useSession, signOut } from 'next-auth/react';
 import { usePathname, useRouter } from 'next/navigation';
 import {
@@ -10,7 +11,6 @@ import {
   Typography,
   Spin,
   Button,
-  Badge,
 } from 'antd';
 import {
   LayoutDashboard,
@@ -19,9 +19,7 @@ import {
   FolderKanban,
   Calendar,
   FileText,
-  Settings,
   LogOut,
-  Bell,
   ChevronDown,
   AppWindow,
   UserCircle,
@@ -263,11 +261,11 @@ export default function AppLayout({ children }: AppLayoutProps) {
       >
         {/* Left Section - Logo */}
         <Link href="/" className="flex items-center gap-5 group">
-          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/40 transition-all duration-300 group-hover:shadow-xl group-hover:shadow-blue-500/50 group-hover:scale-105">
-            <GraduationCap size={24} className="text-white" />
+          <div className="w-11 h-11 flex items-center justify-center">
+            <img src="/logo.png" alt="Projextion Logo" width={32} height={32} style={{ display: 'block', objectFit: 'contain', transform: 'scale(1.8)' }} />
           </div>
           <div className="hidden sm:block">
-            <h1 className="text-lg font-bold text-blue-600 leading-tight">SPMS</h1>
+            <h1 className="text-lg font-bold text-blue-600 leading-tight">Projextion</h1>
             <p className="text-xs text-slate-500 font-medium -mt-0.5">Project Management</p>
           </div>
         </Link>
@@ -320,7 +318,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
             >
               <Avatar
                 size={36}
-                className="bg-gradient-to-br from-blue-500 to-blue-600 cursor-pointer"
+                className="bg-linear-to-br from-blue-500 to-blue-600 cursor-pointer"
                 style={{ boxShadow: '0 2px 8px rgba(0, 123, 255, 0.3)' }}
               >
                 {(session.user?.name?.[0] || session.user?.email?.[0] || 'U').toUpperCase()}
@@ -395,15 +393,13 @@ export default function AppLayout({ children }: AppLayoutProps) {
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                   <div style={{
-                    width: 42, height: 42, borderRadius: 14,
-                    background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                    width: 42, height: 42,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    boxShadow: '0 4px 14px rgba(59,130,246,0.45)',
                   }}>
-                    <GraduationCap size={22} color="#fff" />
+                    <img src="/logo.png" alt="Projextion Logo" width={24} height={24} style={{ display: 'block', objectFit: 'contain', transform: 'scale(1.8)' }} />
                   </div>
                   <div>
-                    <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#1e40af', lineHeight: 1 }}>SPMS</p>
+                    <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: '#1e40af', lineHeight: 1 }}>Projextion</p>
                     <p style={{ margin: 0, fontSize: 11, color: '#94a3b8', marginTop: 2 }}>Project Management</p>
                   </div>
                 </div>
@@ -555,7 +551,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
                   Sign Out
                 </button>
                 <p style={{ margin: '12px 4px 0', fontSize: 10, color: '#cbd5e1', textAlign: 'center' }}>
-                  SPMS · Student Project Management
+                  Projextion · Student Project Management
                 </p>
               </div>
             </motion.aside>

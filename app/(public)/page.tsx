@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
@@ -131,18 +132,7 @@ export default function LandingPage() {
         <div className="lp-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 64 }}>
           {/* Logo */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div
-              style={{
-                width: 40, height: 40,
-                background: 'var(--accent-blue)',
-                borderRadius: 10,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 4px 12px rgba(0,123,255,0.3)',
-                flexShrink: 0,
-              }}
-            >
-              <CalendarDays size={22} color="#fff" />
-            </div>
+            <img src="/logo.png" alt="Projextion Logo" width={25} height={25} style={{ display: 'block', objectFit: 'contain', transform: 'scale(1.8)' }} />
             <span style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-navy)', letterSpacing: '-0.3px' }}>
               Projextion
             </span>
@@ -807,16 +797,7 @@ export default function LandingPage() {
             {/* Brand */}
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-                <div
-                  style={{
-                    width: 36, height: 36, borderRadius: 9,
-                    background: 'var(--accent-blue)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    flexShrink: 0,
-                  }}
-                >
-                  <CalendarDays size={20} color="#fff" />
-                </div>
+                <img src="/logo.png" alt="Projextion" style={{ width: 36, height: 36, objectFit: 'contain', transform: 'scale(1.8)' }} />
                 <span style={{ fontWeight: 700, color: '#fff', fontSize: 15 }}>Projextion</span>
               </div>
               <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 13, lineHeight: 1.7 }}>

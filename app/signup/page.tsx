@@ -145,7 +145,7 @@ export default function SignupPage() {
                 marginBottom: 20,
               }}
             >
-              <BookOutlined style={{ fontSize: 36, color: 'white' }} />
+              <img src="/logo.png" alt="Projextion Logo" style={{ width: 25, height: 25, objectFit: 'contain', transform: 'scale(2.2)' }} />
             </div>
             <Title
               level={2}
