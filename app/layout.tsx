@@ -21,6 +21,11 @@ export const metadata: Metadata = {
   title: "Projextion",
   description: "A seamless platform to organise tasks, set reminders, track progress, and collaborate — all from one intuitive dashboard.",
   keywords: ["schedule", "planner", "time management", "reminders", "collaboration", "productivity"],
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({
